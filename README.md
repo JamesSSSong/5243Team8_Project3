@@ -1,7 +1,5 @@
----
 title: "Project 3: Designing and Conducting an Experiment (or A/B Test)"
 output: github_document
----
 
 ## Project Overview
 
