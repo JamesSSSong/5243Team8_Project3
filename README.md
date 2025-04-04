@@ -1,94 +1,152 @@
-title: "Project 3: Designing and Conducting an Experiment (or A/B Test)"
-output: github_document
+# Project 3 : Designing and Conducting an Experiment (or A/B Test)
 
 ## Project Overview
 
-Experiments play a crucial role in statistical studies, allowing researchers to establish causal relationships and evaluate the effectiveness of interventions. Experimental design ensures that studies are conducted systematically, with minimized bias and maximized reliability.
+Experiments play a crucial role in statistical studies, allowing researchers to establish
+causal relationships and evaluate the effectiveness of interventions. Experimental design is
+a fundamental aspect of scientific inquiry, ensuring that studies are conducted
+systematically, with minimized bias and maximized reliability. A well-designed experiment
+allows researchers to test hypotheses, measure the effects of different treatments, and
+derive actionable insights from data.
 
-In applied data science, A/B testing is a common framework used in web optimization, marketing, and product development. It compares two or more versions of a system (e.g., a webpage or ad) to determine which performs better based on metrics like conversion rates or engagement.
+In the context of applied data science, one common experimental framework is **A/B testing** ,
+widely used in fields like web optimization, marketing, and product development. A/B testing
+is a controlled experiment where two (or more) versions of a system (e.g., a webpage, an
+email campaign, or an advertisement) are compared to determine which performs better
+based on predefined metrics such as conversion rates, engagement, or user satisfaction.
 
-This project provides hands-on experience in designing, executing, and analyzing an experiment, reinforcing key principles of experimental design and data-driven decision-making.
-
----
+Experiments, whether A/B tests or traditional scientific studies, require careful planning to
+ensure valid and meaningful results. This project will give you hands-on experience
+designing, executing, and analyzing an experiment, reinforcing key principles of
+experimental design and data-driven decision-making.
 
 ## Project Objectives
 
 By completing this project, you will:
 
-- Design and conduct an experiment or A/B test aligned with real-world decision-making.
+- Design and conduct an experiment or an A/B Test that aligns with real-world decision-
+    making scenarios.
 - Collect and analyze data to assess the impact of the experiment.
-- Apply statistical methods to evaluate the significance of findings.
-- Communicate insights through a structured report.
-
----
+- Apply statistical methods to evaluate results and determine the significance of findings.
+- Communicate insights through a structured report, summarizing your findings.
 
 ## Project Expectations
 
 Each group should:
 
-- **Formulate a Research Question:** Identify a problem or hypothesis testable via experimentation.
-- **Design the Experiment or A/B Test:** Define control/treatment groups, metrics, and ensure random assignment.
-- **Collect and Process Data:** Use real or simulated environments to gather data.
-- **Analyze the Data:** Use statistical techniques to compare groups and assess significance.
-- **Interpret and Report Findings:** Summarize results, discuss limitations, and provide actionable insights.
+- **Formulate a Research Question** : Identify a problem or hypothesis that can be tested
+    experimentally.
+- **Design the Experiment or A/B Test** : carefully design the experiment, define the control
+    and treatment groups, specify key metrics, and ensure randomness in assignment.
 
----
 
-## Project Deliverables *(Due April 23rd at 11:59 PM)*
+- **Collect and Process Data** : Gather data either from real users (if feasible) or simulated
+    environments.
+- **Analyze the Data** : Use statistical techniques to compare groups and evaluate the
+    significance of differences.
+- **Interpret and Report Findings** : Summarize results, discuss limitations, and provide
+    actionable conclusions.
 
-1. **Final Report:**  
-   - Introduction & Research Question  
-   - Experimental Design & Methodology  
-   - Data Collection  
-   - Statistical Analysis & Results  
-   - Interpretation & Conclusion  
-   - Challenges & Limitations  
+## Project Deliverables [Due on April 23 rd at 11:59PM]
 
-2. **Code Files:**  
-   - Well-commented R or Python scripts  
-   - Submit via GitHub with documentation and a `README.md` explaining how to run the code
+1. **Final Report:** A well-structured report including
+    - Introduction & Research Question
+    - Experimental Design & Methodology
+    - Data Collection
+    - Statistical Analysis & Results
+    - Interpretation & Conclusion
+    - Challenges & Limitations
+2. **Code Files** : A well-commented Python and/or R script(s) containing the full workflow
+    (these files should be submitted in a GitHub repository with proper documentation;
+    include a README file with instructions on how to run the code).
 
----
+## Conducting an A/B Test
 
-## Conducting an A/B Test (Optional)
+If your team chooses to conduct an A/B test, you can use the Shiny web application you
+developed in the previous project or build a new one specifically for this experiment. The
+application should have two distinct versions, where some elements are modified to test
+their impact on user behavior. Examples of possible modifications include:
 
-You may use a Shiny web app for your A/B test. Your app should have two distinct versions with modified elements such as:
+- **Visual Design Changes** : Altering color schemes, button placement, font styles, or layout
 
-- **Visual Design Changes**: Colors, button placement, fonts, layout.
-- **Feature Modifications**: Adding/removing inputs, changing flow/navigation.
-- **Content Adjustments**: Text, tooltips, or messaging.
+## structures.
 
-### Example Metrics:
-- Click-through rate (CTR)  
-- Time spent on sections  
-- Form submission rate  
-- Bounce or exit rates
+- **Feature Modifications** : Adding or removing interactive elements, changing the way
 
-Consider using **Google Analytics** to collect user behavior data:
-- [Adding Google Analytics](https://shiny.posit.co/r/articles/build/google-analytics/)  
-- [Event Tracking](https://hypebright.nl/en/r-en/event-tracking-your-shiny-application-with-google-analytics/)  
-- [Appsilon GA for R Shiny](https://www.appsilon.com/post/r-shiny-google-analytics)
+## users navigate through the app, or modifying input fields.
 
-### Random Assignment Methods:
-- **URL Parameters:** `?group=A` vs. `?group=B`
-- **Cookie-Based Assignment**
+- **Content Adjustment** : Experimenting with different text descriptions, tooltips, or
 
-### Increasing Sample Size:
-- Share your app with classmates or publicly to gather more data.
+## instructional messages.
 
----
+To evaluate the effectiveness of these changes, you must define key performance metrics.
+Examples are
+
+
+- Click-through rates (CTR)
+- Time spent on different sections of the app
+- Task completion rates (e.g., how many users successfully submit a form)
+- Bounce rates or exit rates
+
+To enhance the scope of your analysis, you can integrate **Google Analytics** into your Shiny
+app to collect additional user engagement metrics. Here are some useful links on this topic:
+
+- Adding Google Analytics
+- Event Tracking with Google Analytics
+- R Shiny Google Analytics
+
+Another critical aspect of A/B testing is ensuring that users are randomly assigned to
+different versions of the app. Some possible methods include:
+
+- **URL Parameters** : Assigning users to a version based on a query string in the URL (e.g.,
+    app.com?group=A vs. app.com?group=B)
+- **Cookie-Based Assignment** : Storing the assigned group in a cookie so that users
+    consistently see the same version.
+
+Finally, since our class is small, you should take proactive measures to collect enough data
+for meaningful analysis. For example,
+
+- Share the app version with fellow students in the class to generate more user
+    interactions.
+- Expand participation by sharing the app with the public, such as on social media, forums,
+    or through friends.
 
 ## Evaluation Rubrics
 
-| Category                     | Basic (3pt)         | Intermediate (6pt)               | Advanced (10pt)                            |
-|-----------------------------|---------------------|----------------------------------|--------------------------------------------|
-| **Experimental Design**     | Unclear goals       | Reasonable structure             | Well-structured and justified methodology  |
-| **Data Collection & Quality** | Limited data        | Original data with minor gaps    | High-quality data with clear documentation |
-| **Statistical Analysis**    | Incorrect methods   | Appropriate but incomplete       | Strong and well-interpreted analysis       |
-| **Results & Insights**      | Weak discussion     | Reasonable interpretation        | Insightful conclusions with clear support  |
-| **Report Structure**        | Poor formatting     | Adequate organization            | Clear structure, flow, and professionalism |
-| **Code & Reproducibility**  | Poor documentation  | Functional with comments         | Fully reproducible and well-documented     |
+**1. Experimental Design [0 – 10 pt]**
+    - Basic [ 3 pt] – Research goal/hypothesis lacks clarity, weak control/treatment setup.
+    - Intermediate [ 6 pt] – Clearly defined research goals/hypothesis with reasonable
+       design.
+    - Advanced [ 10 pt] – Well-structured, justified research goals/hypothesis with strong
+       methodology.
 
----
 
-*End of README*
+**2. Data Collection and Quality [0 – 10 pt]**
+    - Basic [ 3 pt] – Uses an already existing dataset without modification or collects limited
+       data with gaps in documentation.
+    - Intermediate [ 6 pt] – Collects original data but may have some missing
+       documentation or minor quality issues.
+    - Advanced [ 10 pt] – Collects high-quality, well-organized data with thorough
+       documentation and justification for data choices.
+**3. Statistical Analysis [0 – 10 pt]**
+    - Basic [ 3 pt] – Minimal or incorrect statistical methods applied.
+    - Intermediate [ 6 pt] – Appropriate methods used but with some gaps in analysis.
+    - Advanced [ 10 pt] – Strong statistical analysis with correct interpretations.
+**4. Results and Insights [0 – 10 pt]**
+    - Basic [ 3 pt] – Findings lack clarity, weak discussion.
+    - Intermediate [ 6 pt] – Clear presentation of results with reasonable interpretations.
+    - Advanced [ 10 pt] – Insightful, well-supported conclusions with meaningful
+       discussion.
+**5. Report Structure and Writing [0 – 10 pt]**
+    - Basic [ 3 pt] – Report lacks logical structure; sections are unclear or missing; poor
+       formatting.
+    - Intermediate [ 6 pt] – Report follows a logical structure but may have minor
+       organization issues; adequate formatting.
+    - Advanced [ 10 pt] – Report is well-structed, with clear headings, logical flow, and
+       smooth transitions; professionally formatted.
+
+## 6. Code and Reproducibility [0 – 10 pt]
+
+- Basic [ 3 pt] – Poorly documented or difficult to reproduce.
+- Intermediate [ 6 pt] – Code is functional with moderate documentation.
+- Advanced [ 10 pt] – Well-documented, easily reproducible code with explanations.
