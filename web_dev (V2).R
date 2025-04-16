@@ -283,6 +283,15 @@ ui <- fluidPage(
         # Bivariate Analysis Tab
         tabPanel(
           title = "Bivariate Analysis",
+          shinyjs::hidden(
+            div(id = "bivTutorialOverlay", class = "tutorial-overlay",
+                div(class = "tutorial-box",
+                    uiOutput("bivTutorialText"),
+                    actionButton("nextBivTutorial", "Next", class = "btn btn-primary")
+                )
+            )
+          ),
+          
           sidebarLayout(
             sidebarPanel(
               h3("Numerical Variable Analysis"),
@@ -367,6 +376,16 @@ ui <- fluidPage(
         # Heat Map Tab
         tabPanel(
           title = "Heat Map",
+          
+          shinyjs::hidden(
+            div(id = "heatTutorialOverlay", class = "tutorial-overlay",
+                div(class = "tutorial-box",
+                    uiOutput("heatTutorialText"),
+                    actionButton("nextHeatTutorial", "Next", class = "btn btn-primary")
+                )
+            )
+          ),
+          
           sidebarLayout(
             sidebarPanel(
               h4("Correlation Heatmap"),
@@ -381,6 +400,16 @@ ui <- fluidPage(
         
         tabPanel(
           title = "Statistical Test",
+          
+          shinyjs::hidden(
+            div(id = "statTutorialOverlay", class = "tutorial-overlay",
+                div(class = "tutorial-box",
+                    uiOutput("statTutorialText"),
+                    actionButton("nextStatTutorial", "Next", class = "btn btn-primary")
+                )
+            )
+          ),
+          
           sidebarLayout(
             sidebarPanel(
               h3("Numerical vs. Numerical Test"),
@@ -1563,6 +1592,108 @@ server <- function(input, output, session) {
       session$sendCustomMessage("disable-clicks-uni", FALSE)
     }
   })
+  
+  bivariateSteps <- c(
+    "<span style='font-size:18px;'>👋 Welcome to Bivariate Analysis! This helps you explore relationships between two variables.</span>",
+    "<span style='font-size:18px;'>1️⃣ Select two <span style='font-size:22px; font-weight:bold;'>numerical variables</span> to visualize with <span style='font-size:22px; font-weight:bold;'>Scatter Plot</span> or <span style='font-size:22px; font-weight:bold;'>Line Plot</span>.</span>",
+    "<span style='font-size:18px;'>2️⃣ Add a <span style='font-size:22px; font-weight:bold;'>Smooth Line</span> for clearer trends (optional).</span>",
+    "<span style='font-size:18px;'>3️⃣ Select two <span style='font-size:22px; font-weight:bold;'>categorical variables</span> and choose a <span style='font-size:22px; font-weight:bold;'>Grouped</span>, <span style='font-size:22px; font-weight:bold;'>Stacked</span>, or <span style='font-size:22px; font-weight:bold;'>100% Stacked Bar Chart</span>.</span>",
+    "<span style='font-size:18px;'>4️⃣ Try <span style='font-size:22px; font-weight:bold;'>Categorical-Numerical</span> plots like <span style='font-size:22px; font-weight:bold;'>Boxplot</span> or <span style='font-size:22px; font-weight:bold;'>Violin Plot</span>.</span>",
+    "<span style='font-size:18px;'>✅ Great! You’re ready to explore two-variable relationships.</span>"
+  )
+  
+  bivIndex <- reactiveVal(1)
+  bivTutorialShown <- reactiveVal(FALSE)
+  
+  observe({
+    if (input$edaTabs == "Bivariate Analysis" && !bivTutorialShown()) {
+      bivIndex(1)
+      shinyjs::show("bivTutorialOverlay")
+      session$sendCustomMessage("disable-clicks-uni", TRUE)
+      bivTutorialShown(TRUE)
+      shinyjs::runjs("window.scrollTo(0, 0);")
+    }
+  })
+  
+  output$bivTutorialText <- renderUI({
+    HTML(bivariateSteps[bivIndex()])
+  })
+  
+  observeEvent(input$nextBivTutorial, {
+    if (bivIndex() < length(bivariateSteps)) {
+      bivIndex(bivIndex() + 1)
+    } else {
+      shinyjs::hide("bivTutorialOverlay")
+      session$sendCustomMessage("disable-clicks-uni", FALSE)
+    }
+  })
+  
+  heatmapSteps <- c(
+    "<span style='font-size:18px;'>🧊 Welcome to the Heat Map! Here you’ll see <span style='font-size:22px; font-weight:bold;'>correlations</span> among numerical variables.</span>",
+    "<span style='font-size:18px;'>1️⃣ A <span style='font-size:22px; font-weight:bold;'>Correlation Matrix</span> is color-coded: darker means stronger correlation.</span>",
+    "<span style='font-size:18px;'>2️⃣ Use it to detect variables with <span style='font-size:22px; font-weight:bold;'>high correlation</span> or <span style='font-size:22px; font-weight:bold;'>potential multicollinearity</span>.</span>",
+    "<span style='font-size:18px;'>✅ Done! Use these insights for feature engineering or regression prep.</span>"
+  )
+  
+  heatIndex <- reactiveVal(1)
+  heatTutorialShown <- reactiveVal(FALSE)
+  
+  observe({
+    if (input$edaTabs == "Heat Map" && !heatTutorialShown()) {
+      heatIndex(1)
+      shinyjs::show("heatTutorialOverlay")
+      session$sendCustomMessage("disable-clicks-uni", TRUE)
+      heatTutorialShown(TRUE)
+      shinyjs::runjs("window.scrollTo(0, 0);")
+    }
+  })
+  
+  output$heatTutorialText <- renderUI({
+    HTML(heatmapSteps[heatIndex()])
+  })
+  
+  observeEvent(input$nextHeatTutorial, {
+    if (heatIndex() < length(heatmapSteps)) {
+      heatIndex(heatIndex() + 1)
+    } else {
+      shinyjs::hide("heatTutorialOverlay")
+      session$sendCustomMessage("disable-clicks-uni", FALSE)
+    }
+  })
+  
+  statTestSteps <- c(
+    "<span style='font-size:18px;'>🧪 Welcome to Statistical Tests! Run formal tests between variables.</span>",
+    "<span style='font-size:18px;'>1️⃣ Choose two <span style='font-size:22px; font-weight:bold;'>numerical variables</span> and select <span style='font-size:22px; font-weight:bold;'>Pearson</span> or <span style='font-size:22px; font-weight:bold;'>Kendall</span> correlation test.</span>",
+    "<span style='font-size:18px;'>2️⃣ Choose two <span style='font-size:22px; font-weight:bold;'>categorical variables</span> and apply the <span style='font-size:22px; font-weight:bold;'>Chi-Square Test</span>.</span>",
+    "<span style='font-size:18px;'>✅ Results appear on the right — ready for interpretation.</span>"
+  )
+  
+  statIndex <- reactiveVal(1)
+  statTutorialShown <- reactiveVal(FALSE)
+  
+  observe({
+    if (input$edaTabs == "Statistical Test" && !statTutorialShown()) {
+      statIndex(1)
+      shinyjs::show("statTutorialOverlay")
+      session$sendCustomMessage("disable-clicks-uni", TRUE)
+      statTutorialShown(TRUE)
+      shinyjs::runjs("window.scrollTo(0, 0);")
+    }
+  })
+  
+  output$statTutorialText <- renderUI({
+    HTML(statTestSteps[statIndex()])
+  })
+  
+  observeEvent(input$nextStatTutorial, {
+    if (statIndex() < length(statTestSteps)) {
+      statIndex(statIndex() + 1)
+    } else {
+      shinyjs::hide("statTutorialOverlay")
+      session$sendCustomMessage("disable-clicks-uni", FALSE)
+    }
+  })
+  
   
 }
 
