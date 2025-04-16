@@ -1516,26 +1516,43 @@ server <- function(input, output, session) {
   })
   
   univariateSteps <- c(
-    "👋 Welcome to Univariate Analysis! Let’s explore one variable at a time.",
-    "1️⃣ Select a numerical variable from the dropdown at the top left.",
-    "2️⃣ Choose which charts to show: Histogram, Boxplot, or Dotplot.",
-    "3️⃣ Customize Histogram (binwidth, start point, percent view).",
-    "4️⃣ Select a categorical variable and pick Bar Chart or Pie Chart.",
-    "✅ You're ready to analyze! Click anywhere to exit."
+    "<span style='font-size:18px;'>👋 Welcome to Univariate Analysis! Let’s explore one variable at a time.</span>",
+    
+    "<span style='font-size:18px;'>1️⃣ Select a <span style='font-size:22px; font-weight:bold;'>numerical variable</span> from the dropdown at the top left.</span>",
+    
+    "<span style='font-size:18px;'>2️⃣ Choose which charts to show: 
+    <span style='font-size:22px; font-weight:bold;'>Histogram</span>, 
+    <span style='font-size:22px; font-weight:bold;'>Boxplot</span>, or 
+    <span style='font-size:22px; font-weight:bold;'>Dotplot</span>.</span>",
+    
+    "<span style='font-size:18px;'>3️⃣ Customize 
+    <span style='font-size:22px; font-weight:bold;'>Histogram</span> 
+    (binwidth, start point, percent view).</span>",
+    
+    "<span style='font-size:18px;'>4️⃣ Select a 
+    <span style='font-size:22px; font-weight:bold;'>categorical variable</span> and pick 
+    <span style='font-size:22px; font-weight:bold;'>Bar Chart</span> or 
+    <span style='font-size:22px; font-weight:bold;'>Pie Chart</span>.</span>",
+    
+    "<span style='font-size:18px;'>✅ You're ready to analyze! Click anywhere to exit.</span>"
   )
   
   uniIndex <- reactiveVal(1)
+  uniTutorialShown <- reactiveVal(FALSE)
+                                  
   observe({
-    # Auto-trigger tutorial when user switches to Univariate Analysis
-    if (input$edaTabs == "Univariate Analysis") {
+    if (input$edaTabs == "Univariate Analysis" && !uniTutorialShown()) {
       uniIndex(1)
       shinyjs::show("uniTutorialOverlay")
       session$sendCustomMessage("disable-clicks-uni", TRUE)
+      
+      uniTutorialShown(TRUE)  # ✅ Mark as shown
+      shinyjs::runjs("window.scrollTo(0, 0);")
     }
   })
   
   output$uniTutorialText <- renderUI({
-    h4(univariateSteps[uniIndex()])
+    HTML(univariateSteps[uniIndex()])
   })
   
   observeEvent(input$nextUniTutorial, {
