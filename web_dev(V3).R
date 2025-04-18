@@ -1845,6 +1845,19 @@ observe({
     shinyjs::runjs("window.scrollTo(0, 0);")
   }
 })
+
+observe({
+	final_step_FE <-FALSE
+  req(input$mainTabs == "Feature Engineering")
+  if(featureIndex_FE() == length(featureSteps)){
+  	final_step_FE <- TRUE
+  }  
+  updateActionButton(
+    session,
+    "nextFeatureTutorial",
+    label = if (final_step_FE) "Done" else "Next"
+  )  
+})
 }
 
 # Run Shiny App
