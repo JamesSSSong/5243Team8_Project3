@@ -11,6 +11,10 @@ library(glmnet)
 library(olsrr)
 library(shinyjs)
 
+`%||%` <- function(a, b) {
+  if (!is.null(a)) a else b
+}
+
 # User Interface (UI)
 ui <- fluidPage(
   useShinyjs(),
