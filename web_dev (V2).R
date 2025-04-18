@@ -943,7 +943,6 @@ server <- function(input, output, session) {
   dataProcessingIndex <- reactiveVal(1)
   dataProcessingTutorialShown <- reactiveVal(FALSE)
   
-  # 3️⃣ When they switch to the Data Preprocess tab, fire the tutorial
   observe({
     req(input$mainTabs)
     if (input$mainTabs == "preprocess" && !dataProcessingTutorialShown()) {
@@ -955,13 +954,21 @@ server <- function(input, output, session) {
       shinyjs::runjs("window.scrollTo(0, 0);")
     }
   })
+  
+  observe({
+    # When on the final step, change button to "Done"
+    final_step <- dataProcessingIndex() == length(dataProcessingSteps)
+    updateActionButton(
+      session,
+      "nextDataProcessingTutorial",
+      label = if (final_step) "Done" else "Next"
+    )
+  })
 
-  # 4️⃣ Render the current step text
   output$dataProcessingTutorialText <- renderUI({
     HTML(dataProcessingSteps[dataProcessingIndex()])
   })
   
-  # 5️⃣ Advance through steps
   observeEvent(input$nextDataProcessingTutorial, {
     if (dataProcessingIndex() < length(dataProcessingSteps)) {
       dataProcessingIndex(dataProcessingIndex() + 1)
