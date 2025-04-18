@@ -1,3 +1,4 @@
+function(){
 library(shiny)
 library(shinythemes)
 library(DT)
@@ -48,6 +49,16 @@ ui <- fluidPage(
     }
   })();
 ")),
+  
+      tags$script(HTML("
+      Shiny.addCustomMessageHandler('trackEvent', function(data) {
+        gtag('event', data.event, {
+          'event_category': data.category,
+          'event_label': data.label
+        });
+      });
+    ")),
+
   
     tags$style(HTML("
     .tutorial-overlay {
@@ -1211,6 +1222,13 @@ isTutorialGroup <- reactive({
   observeEvent(input$savePCA, {
     df<- PCA_transformed_Data()
     reactiveData(df)
+    
+    session$sendCustomMessage("trackEvent", list(
+    event = "SavePCA",
+    category = userGroup(),
+    label = "FeatureEngineering"
+  ))
+
   })
   
   #feature selection
@@ -1908,7 +1926,8 @@ observe({
 userGroup <- reactive({
   parseQueryString(session$clientData$url_search)$group %||% "A"
 })
+
 }
 # Run Shiny App
 shinyApp(ui, server)
-
+}
