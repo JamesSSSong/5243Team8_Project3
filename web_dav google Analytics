@@ -943,10 +943,22 @@ server <- function(input, output, session) {
   NF_Data <- reactiveVal(data.frame())  
   new_feature_name <- reactiveVal(NULL)  
   
+  #check the user is group A or B
+  userGroup <- reactive({
+  parseQueryString(session$clientData$url_search)$group %||% "A"
+})
+
+isTutorialGroup <- reactive({
+  userGroup() == "A"
+})
+
+  
   # Show the tutorial for Loading Datasets page
   observe({
-    shinyjs::show("loadingTutorialOverlay")  # Show the tutorial overlay
+  	if(isTutorialGroup()){
+  		shinyjs::show("loadingTutorialOverlay")  # Show the tutorial overlay
     session$sendCustomMessage("disable-clicks-uni", TRUE)  # Disable other clicks temporarily
+  	}
   })
   
   observeEvent(input$nextLoadingTutorial, {
@@ -991,7 +1003,7 @@ server <- function(input, output, session) {
   
   observe({
     req(input$mainTabs)
-    if (input$mainTabs == "preprocess" && !dataProcessingTutorialShown()) {
+    if (isTutorialGroup() && input$mainTabs == "preprocess" && !dataProcessingTutorialShown()) {
       dataProcessingIndex(1)
       shinyjs::show("dataProcessingTutorialOverlay")
       # disable other tabs just like your EDA code
@@ -1714,7 +1726,7 @@ server <- function(input, output, session) {
   uniTutorialShown <- reactiveVal(FALSE)
                                   
   observe({
-    if (input$edaTabs == "Univariate Analysis" && !uniTutorialShown()) {
+    if (isTutorialGroup() && input$edaTabs == "Univariate Analysis" && !uniTutorialShown()) {
       uniIndex(1)
       shinyjs::show("uniTutorialOverlay")
       session$sendCustomMessage("disable-clicks-uni", TRUE)
@@ -1750,7 +1762,7 @@ server <- function(input, output, session) {
   bivTutorialShown <- reactiveVal(FALSE)
   
   observe({
-    if (input$edaTabs == "Bivariate Analysis" && !bivTutorialShown()) {
+    if (isTutorialGroup() && input$edaTabs == "Bivariate Analysis" && !bivTutorialShown()) {
       bivIndex(1)
       shinyjs::show("bivTutorialOverlay")
       session$sendCustomMessage("disable-clicks-uni", TRUE)
@@ -1851,7 +1863,7 @@ featureIndex_FE <- reactiveVal(1)
 featureTutorialShown_FE <- reactiveVal(FALSE)
 
 observe({
-  if (input$mainTabs == "Feature Engineering" && !featureTutorialShown_FE()) {
+  if (isTutorialGroup() && input$mainTabs == "Feature Engineering" && !featureTutorialShown_FE()) {
     featureIndex_FE(1)
     shinyjs::show("featureTutorialOverlay")
     session$sendCustomMessage("disable-clicks-uni", TRUE)
@@ -1896,14 +1908,7 @@ observe({
 userGroup <- reactive({
   parseQueryString(session$clientData$url_search)$group %||% "A"
 })
-
-observe({
-  if (userGroup() == "A") {
-    shinyjs::show("featureTutorialOverlay")
-    featureTutorialShown(TRUE)
-    shinyjs::runjs("window.scrollTo(0, 0);")
-  }
-})
 }
 # Run Shiny App
 shinyApp(ui, server)
+
