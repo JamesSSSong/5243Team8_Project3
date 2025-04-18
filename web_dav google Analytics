@@ -1898,7 +1898,7 @@ userGroup <- reactive({
 })
 
 observe({
-  if (userGroup() == "A" && input$mainTabs == "Feature Engineering" && !featureTutorialShown()) {
+  if (userGroup() == "A") {
     shinyjs::show("featureTutorialOverlay")
     featureTutorialShown(TRUE)
     shinyjs::runjs("window.scrollTo(0, 0);")
