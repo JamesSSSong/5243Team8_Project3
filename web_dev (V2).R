@@ -14,7 +14,6 @@ library(shinyjs)
 # User Interface (UI)
 ui <- fluidPage(
   useShinyjs(),
-  
   tags$head(
     tags$style(HTML("
     .tutorial-overlay {
@@ -44,14 +43,38 @@ ui <- fluidPage(
         $('#edaTabs-tab-1').parent().siblings().css('pointer-events', 'auto');
       }
     });
+    
+    // Disable clicks for Data Processing tab when tutorial is active
+    Shiny.addCustomMessageHandler('disable-clicks-data', function(x) {
+      if (x) {
+        $('#dataprocessingTab-tab').parent().siblings().css('pointer-events', 'none');  // Disable clicks for Data Processing
+      } else {
+        $('#dataprocessingTab-tab').parent().siblings().css('pointer-events', 'auto'); // Enable clicks for Data Processing
+      }
+    });
   "))
   ),
   
   theme = shinytheme("flatly"),
+  
+  # Tutorial Overlay content for Loading Datasets page
+  shinyjs::hidden(
+    div(
+      id = "loadingTutorialOverlay", 
+      class = "tutorial-overlay", 
+      div(
+        class = "tutorial-box", 
+        h4("👋 Welcome to Dataset Loader!"),
+        HTML("<p>Please upload your <strong>dataset</strong> or select a built-in dataset to get started.</p>"),
+        actionButton("nextLoadingTutorial", "Start", class = "btn btn-primary")
+      )
+    )
+  ),
+  
   navbarPage(
     "Interactive Data Analysis App",
+    id = "mainTabs", 
     
-    # 1. Load Datasets
     tabPanel(
       title = "Loading Datasets",
       titlePanel("Loading Datasets"),
@@ -76,7 +99,22 @@ ui <- fluidPage(
     # 2. Data Processing
     tabPanel(
       title = "Data Preprocess",
+      value = "preprocess",
+      id = "dataprocessingTab", 
       titlePanel("Data Preprocess"),
+      
+      shinyjs::hidden(
+        div(
+          id = "dataProcessingTutorialOverlay",  # ID for overlay
+          class = "tutorial-overlay",  # Class for styling
+          div(
+            class = "tutorial-box",
+            uiOutput("dataProcessingTutorialText"), 
+            actionButton("nextDataProcessingTutorial", 
+                         "Next", class = "btn btn-primary")
+          )
+        )
+      ),
       
       sidebarLayout(
         sidebarPanel(
@@ -859,6 +897,17 @@ server <- function(input, output, session) {
   NF_Data <- reactiveVal(data.frame())  
   new_feature_name <- reactiveVal(NULL)  
   
+  # Show the tutorial for Loading Datasets page
+  observe({
+    shinyjs::show("loadingTutorialOverlay")  # Show the tutorial overlay
+    session$sendCustomMessage("disable-clicks-uni", TRUE)  # Disable other clicks temporarily
+  })
+  
+  observeEvent(input$nextLoadingTutorial, {
+    shinyjs::hide("loadingTutorialOverlay")  # Hide the tutorial overlay when 'Next' is clicked
+    session$sendCustomMessage("disable-clicks-uni", FALSE)  # Enable other clicks
+  })
+  
   # Upload & Read Data
   observeEvent(input$loadData, {
     df <- if (!is.null(input$file)) {
@@ -878,6 +927,48 @@ server <- function(input, output, session) {
     origionData(df)
     reactiveData(df)
     summaryLog(c(summaryLog(), "Data loaded successfully."))
+  })
+  
+  dataProcessingSteps <- c(
+    "<span style='font-size:18px;'>Welcome to Data Preprocessing! Let's clean and transform your data.</span>",
+    "<span style='font-size:18px;'>1️⃣ Choose how to handle <strong>missing values</strong> from the dropdown.</span>",
+    "<span style='font-size:18px;'>2️⃣ View <strong>Duplicates</strong> and decide whether to <strong>remove duplicates</strong>.</span>",
+    "<span style='font-size:18px;'>3️⃣ Check the <strong>Data Statistics</strong> and then select column(s) you'd like to convert to <strong>numeric</strong> or <strong>categorical</strong>.</span>",
+    "<span style='font-size:18px;'>4️⃣ Specify column(s) to <strong>standardize</strong>, if needed.</span>",
+    "<span style='font-size:18px;'>5️⃣ Select column(s) and choose your <strong>categorical encoding</strong> strategy.</span>",
+    "<span style='font-size:18px;'>6️⃣ Handle <strong>outliers</strong> with strategies from the dropdown options.</span>",
+    "<span style='font-size:18px;'>✅ All set! Click <strong>Run Preprocessing</strong> to apply and view the effect of your change from <strong>Distribution & Processed Data</strong>.</span>"
+  )
+  
+  dataProcessingIndex <- reactiveVal(1)
+  dataProcessingTutorialShown <- reactiveVal(FALSE)
+  
+  # 3️⃣ When they switch to the Data Preprocess tab, fire the tutorial
+  observe({
+    req(input$mainTabs)
+    if (input$mainTabs == "preprocess" && !dataProcessingTutorialShown()) {
+      dataProcessingIndex(1)
+      shinyjs::show("dataProcessingTutorialOverlay")
+      # disable other tabs just like your EDA code
+      session$sendCustomMessage("disable-clicks-data", TRUE)
+      dataProcessingTutorialShown(TRUE)
+      shinyjs::runjs("window.scrollTo(0, 0);")
+    }
+  })
+
+  # 4️⃣ Render the current step text
+  output$dataProcessingTutorialText <- renderUI({
+    HTML(dataProcessingSteps[dataProcessingIndex()])
+  })
+  
+  # 5️⃣ Advance through steps
+  observeEvent(input$nextDataProcessingTutorial, {
+    if (dataProcessingIndex() < length(dataProcessingSteps)) {
+      dataProcessingIndex(dataProcessingIndex() + 1)
+    } else {
+      shinyjs::hide("dataProcessingTutorialOverlay")
+      session$sendCustomMessage("disable-clicks-data", FALSE)
+    }
   })
   
   observe({
@@ -1563,7 +1654,7 @@ server <- function(input, output, session) {
     <span style='font-size:22px; font-weight:bold;'>Bar Chart</span> or 
     <span style='font-size:22px; font-weight:bold;'>Pie Chart</span>.</span>",
     
-    "<span style='font-size:18px;'>✅ You're ready to analyze! Click anywhere to exit.</span>"
+    "<span style='font-size:18px;'>✅ You're ready to analyze!</span>"
   )
   
   uniIndex <- reactiveVal(1)
