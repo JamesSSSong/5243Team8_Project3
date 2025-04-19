@@ -1,6 +1,6 @@
 # Project 3 : A/B Test
 
-Deployed Web App: URL https://ruoshi-zhang.shinyapps.io/STAT5243_Project2_Team8/
+Deployed Web App: https://ruoshi-zhang.shinyapps.io/STAT5243_Project2_Team8/
 
 ## Project Overview
 
