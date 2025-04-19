@@ -28,7 +28,9 @@ ui <- fluidPage(
     window.dataLayer = window.dataLayer || [];
     function gtag(){{dataLayer.push(arguments);}}
     gtag("js", new Date());
-    gtag("config", "G-Y1XF4Z9S7Y");
+    gtag("config", "G-Y1XF4Z9S7Y", {{
+    group: new URLSearchParams(window.location.search).get("group")
+    }});
   </script>
 ')),
     #random AB group
