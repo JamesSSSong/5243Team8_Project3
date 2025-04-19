@@ -103,6 +103,7 @@ ui <- fluidPage(
   "))
   ),
   
+  
   theme = shinytheme("flatly"),
   
   # Tutorial Overlay content for Loading Datasets page
@@ -1460,6 +1461,60 @@ server <- function(input, output, session) {
       labs(title = "Dotplot", x = input$statVar, y = "Count")
   })
   
+  # Track when user enables histogram
+  observeEvent(input$histogram, {
+    if (input$histogram) {
+      session$sendCustomMessage("trackEvent", list(
+        event = "EnableHistogram",
+        category = "EDA-Univariate",
+        label = "NumericalAnalysis"
+      ))
+    }
+  })
+  
+  # Track boxplot click
+  observeEvent(input$boxplot, {
+    if (input$boxplot) {
+      session$sendCustomMessage("trackEvent", list(
+        event = "EnableBoxplot",
+        category = "EDA-Univariate",
+        label = "NumericalAnalysis"
+      ))
+    }
+  })
+  
+  # Track dotplot click
+  observeEvent(input$dotplot, {
+    if (input$dotplot) {
+      session$sendCustomMessage("trackEvent", list(
+        event = "EnableDotplot",
+        category = "EDA-Univariate",
+        label = "NumericalAnalysis"
+      ))
+    }
+  })
+  
+  # Track bar chart click
+  observeEvent(input$barChart, {
+    if (input$barChart) {
+      session$sendCustomMessage("trackEvent", list(
+        event = "EnableBarChart",
+        category = "EDA-Univariate",
+        label = "CategoricalAnalysis"
+      ))
+    }
+  })
+  
+  # Track pie chart click
+  observeEvent(input$pieChart, {
+    if (input$pieChart) {
+      session$sendCustomMessage("trackEvent", list(
+        event = "EnablePieChart",
+        category = "EDA-Univariate",
+        label = "CategoricalAnalysis"
+      ))
+    }
+  })
   
   # Render Correlation Heatmap
   output$heatmapOutput <- renderPlot({
@@ -1645,6 +1700,45 @@ server <- function(input, output, session) {
     p + theme_minimal()
   })
   
+  observeEvent(input$scatterPlot, {
+    if (input$scatterPlot) {
+      session$sendCustomMessage("trackEvent", list(
+        event = "EnableScatterPlot",
+        category = "EDA-Bivariate",
+        label = "NumericalAnalysis"
+      ))
+    }
+  })
+  
+  observeEvent(input$linePlot, {
+    if (input$linePlot) {
+      session$sendCustomMessage("trackEvent", list(
+        event = "EnableLinePlot",
+        category = "EDA-Bivariate",
+        label = "NumericalAnalysis"
+      ))
+    }
+  })
+  
+  
+  observeEvent(input$catPlotType, {
+    session$sendCustomMessage("trackEvent", list(
+      event = paste0("CatPlotType_", input$catPlotType),
+      category = "EDA-Bivariate",
+      label = "CategoricalAnalysis"
+    ))
+  })
+  
+  
+  observeEvent(input$catNumPlotType, {
+    session$sendCustomMessage("trackEvent", list(
+      event = paste0("CatNumPlotType_", input$catNumPlotType),
+      category = "EDA-Bivariate",
+      label = "CatNumAnalysis"
+    ))
+  })
+  
+  
   observe({
     df <- reactiveData()
     req(df)  
@@ -1702,6 +1796,22 @@ server <- function(input, output, session) {
     }
   })
   
+  observeEvent({
+    input$numVar1
+    input$numVar2
+    input$numNumTest
+  }, {
+    df <- reactiveData()
+    if (!is.null(df) && !is.null(input$numVar1) && !is.null(input$numVar2) && input$numNumTest != "") {
+      session$sendCustomMessage("trackEvent", list(
+        event = "RunNumNumTest",
+        category = "EDA-StatisticalTest",
+        label = input$numNumTest
+      ))
+    }
+  }, ignoreInit = TRUE)
+  
+  
   observe({
     df <- reactiveData()
     req(df)  
@@ -1757,6 +1867,22 @@ server <- function(input, output, session) {
       cat("❌ There is no significant association between", input$catVar1, "and", input$catVar2, ".\n")
     }
   })
+  
+  observeEvent({
+    input$catVar1
+    input$catVar2
+    input$catCatTest
+  }, {
+    df <- reactiveData()
+    if (!is.null(df) && !is.null(input$catVar1) && !is.null(input$catVar2) && input$catCatTest != "") {
+      session$sendCustomMessage("trackEvent", list(
+        event = "RunCatCatTest",
+        category = "EDA-StatisticalTest",
+        label = input$catCatTest
+      ))
+    }
+  }, ignoreInit = TRUE)
+  
   
   univariateSteps <- c(
     "<span style='font-size:18px;'>Welcome to Univariate Analysis! Let’s explore one variable at a time.</span>",
