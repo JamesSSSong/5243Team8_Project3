@@ -1655,26 +1655,14 @@ server <- function(input, output, session) {
   })
   
   univariateSteps <- c(
-    "<span style='font-size:18px;'>👋 Welcome to Univariate Analysis! Let’s explore one variable at a time.</span>",
-    
-    "<span style='font-size:18px;'>1️⃣ Select a <span style='font-size:22px; font-weight:bold;'>numerical variable</span> from the dropdown at the top left.</span>",
-    
-    "<span style='font-size:18px;'>2️⃣ Choose which charts to show: 
-    <span style='font-size:22px; font-weight:bold;'>Histogram</span>, 
-    <span style='font-size:22px; font-weight:bold;'>Boxplot</span>, or 
-    <span style='font-size:22px; font-weight:bold;'>Dotplot</span>.</span>",
-    
-    "<span style='font-size:18px;'>3️⃣ Customize 
-    <span style='font-size:22px; font-weight:bold;'>Histogram</span> 
-    (binwidth, start point, percent view).</span>",
-    
-    "<span style='font-size:18px;'>4️⃣ Select a 
-    <span style='font-size:22px; font-weight:bold;'>categorical variable</span> and pick 
-    <span style='font-size:22px; font-weight:bold;'>Bar Chart</span> or 
-    <span style='font-size:22px; font-weight:bold;'>Pie Chart</span>.</span>",
-    
-    "<span style='font-size:18px;'>✅ You're ready to analyze!</span>"
+    "<span style='font-size:18px;'>Welcome to Univariate Analysis! Let’s explore one variable at a time.</span>",
+    "<span style='font-size:18px;'>1️⃣ Select a <strong>numerical variable</strong> from the dropdown at the top left.</span>",
+    "<span style='font-size:18px;'>2️⃣ Choose which charts to show: <strong>Histogram</strong>, <strong>Boxplot</strong>, or <strong>Dotplot</strong>.</span>",
+    "<span style='font-size:18px;'>3️⃣ Customize your <strong>Histogram</strong> (binwidth, start point, percent view).</span>",
+    "<span style='font-size:18px;'>4️⃣ Select a <strong>categorical variable</strong> and pick a <strong>Bar Chart</strong> or <strong>Pie Chart</strong>.</span>",
+    "<span style='font-size:18px;'>✅ You’re ready to analyze!</span>"
   )
+  
   
   uniIndex <- reactiveVal(1)
   uniTutorialShown <- reactiveVal(FALSE)
@@ -1690,6 +1678,15 @@ server <- function(input, output, session) {
     }
   })
   
+  observe({
+    isLast <- uniIndex() == length(univariateSteps)
+    updateActionButton(
+      session,
+      "nextUniTutorial",
+      label = if (isLast) "Done" else "Next"
+    )
+  })
+  
   output$uniTutorialText <- renderUI({
     HTML(univariateSteps[uniIndex()])
   })
@@ -1702,14 +1699,14 @@ server <- function(input, output, session) {
       session$sendCustomMessage("disable-clicks-uni", FALSE)
     }
   })
-  
+
   bivariateSteps <- c(
-    "<span style='font-size:18px;'>👋 Welcome to Bivariate Analysis! This helps you explore relationships between two variables.</span>",
-    "<span style='font-size:18px;'>1️⃣ Select two <span style='font-size:22px; font-weight:bold;'>numerical variables</span> to visualize with <span style='font-size:22px; font-weight:bold;'>Scatter Plot</span> or <span style='font-size:22px; font-weight:bold;'>Line Plot</span>.</span>",
-    "<span style='font-size:18px;'>2️⃣ Add a <span style='font-size:22px; font-weight:bold;'>Smooth Line</span> for clearer trends (optional).</span>",
-    "<span style='font-size:18px;'>3️⃣ Select two <span style='font-size:22px; font-weight:bold;'>categorical variables</span> and choose a <span style='font-size:22px; font-weight:bold;'>Grouped</span>, <span style='font-size:22px; font-weight:bold;'>Stacked</span>, or <span style='font-size:22px; font-weight:bold;'>100% Stacked Bar Chart</span>.</span>",
-    "<span style='font-size:18px;'>4️⃣ Try <span style='font-size:22px; font-weight:bold;'>Categorical-Numerical</span> plots like <span style='font-size:22px; font-weight:bold;'>Boxplot</span> or <span style='font-size:22px; font-weight:bold;'>Violin Plot</span>.</span>",
-    "<span style='font-size:18px;'>✅ Great! You’re ready to explore two-variable relationships.</span>"
+    "<span style='font-size:18px;'>Welcome to Bivariate Analysis! This helps you explore relationships between two variables.</span>",
+    "<span style='font-size:18px;'>1️⃣ Select two <strong>numerical variables</strong> to visualize with <strong>Scatter Plot</strong> or <strong>Line Plot</strong>.</span>",
+    "<span style='font-size:18px;'>2️⃣ Add a <strong>Smooth Line</strong> for clearer trends (optional).</span>",
+    "<span style='font-size:18px;'>3️⃣ Select two <strong>categorical variables</strong> and choose a <strong>Grouped</strong>, <strong>Stacked</strong>, or <strong>100% Stacked Bar Chart</strong>.</span>",
+    "<span style='font-size:18px;'>4️⃣ Try <strong>Categorical‑Numerical</strong> plots like <strong>Boxplot</strong> or <strong>Violin Plot</strong>.</span>",
+    "<span style='font-size:18px;'>✅ Great! You’re ready to explore two‑variable relationships.</span>"
   )
   
   bivIndex <- reactiveVal(1)
@@ -1723,6 +1720,15 @@ server <- function(input, output, session) {
       bivTutorialShown(TRUE)
       shinyjs::runjs("window.scrollTo(0, 0);")
     }
+  })
+  
+  observe({
+    isLast <- bivIndex() == length(bivariateSteps)
+    updateActionButton(
+      session,
+      "nextBivTutorial",
+      label = if (isLast) "Done" else "Next"
+    )
   })
   
   output$bivTutorialText <- renderUI({
@@ -1739,9 +1745,9 @@ server <- function(input, output, session) {
   })
   
   heatmapSteps <- c(
-    "<span style='font-size:18px;'>🧊 Welcome to the Heat Map! Here you’ll see <span style='font-size:22px; font-weight:bold;'>correlations</span> among numerical variables.</span>",
-    "<span style='font-size:18px;'>1️⃣ A <span style='font-size:22px; font-weight:bold;'>Correlation Matrix</span> is color-coded: darker means stronger correlation.</span>",
-    "<span style='font-size:18px;'>2️⃣ Use it to detect variables with <span style='font-size:22px; font-weight:bold;'>high correlation</span> or <span style='font-size:22px; font-weight:bold;'>potential multicollinearity</span>.</span>",
+    "<span style='font-size:18px;'>Welcome to the Heat Map! Here you’ll see correlations among numerical variables.</span>",
+    "<span style='font-size:18px;'>1️⃣ A <strong>Correlation Matrix</strong> is color‑coded: darker means stronger correlation.</span>",
+    "<span style='font-size:18px;'>2️⃣ Use it to detect variables with <strong>high correlation</strong> or <strong>potential multicollinearity</strong>.</span>",
     "<span style='font-size:18px;'>✅ Done! Use these insights for feature engineering or regression prep.</span>"
   )
   
@@ -1758,6 +1764,15 @@ server <- function(input, output, session) {
     }
   })
   
+  observe({
+    isLast <- heatIndex() == length(heatmapSteps)
+    updateActionButton(
+      session,
+      "nextHeatTutorial",
+      label = if (isLast) "Done" else "Next"
+    )
+  })
+  
   output$heatTutorialText <- renderUI({
     HTML(heatmapSteps[heatIndex()])
   })
@@ -1772,9 +1787,9 @@ server <- function(input, output, session) {
   })
   
   statTestSteps <- c(
-    "<span style='font-size:18px;'>🧪 Welcome to Statistical Tests! Run formal tests between variables.</span>",
-    "<span style='font-size:18px;'>1️⃣ Choose two <span style='font-size:22px; font-weight:bold;'>numerical variables</span> and select <span style='font-size:22px; font-weight:bold;'>Pearson</span> or <span style='font-size:22px; font-weight:bold;'>Kendall</span> correlation test.</span>",
-    "<span style='font-size:18px;'>2️⃣ Choose two <span style='font-size:22px; font-weight:bold;'>categorical variables</span> and apply the <span style='font-size:22px; font-weight:bold;'>Chi-Square Test</span>.</span>",
+    "<span style='font-size:18px;'>Welcome to Statistical Tests! Run formal tests between variables.</span>",
+    "<span style='font-size:18px;'>1️⃣ Choose two <strong>numerical variables</strong> and select <strong>Pearson</strong> or <strong>Kendall</strong> correlation test.</span>",
+    "<span style='font-size:18px;'>2️⃣ Choose two <strong>categorical variables</strong> and apply the <strong>Chi‑Square Test</strong>.</span>",
     "<span style='font-size:18px;'>✅ Results appear on the right — ready for interpretation.</span>"
   )
   
@@ -1789,6 +1804,15 @@ server <- function(input, output, session) {
       statTutorialShown(TRUE)
       shinyjs::runjs("window.scrollTo(0, 0);")
     }
+  })
+  
+  observe({
+    isLast <- statIndex() == length(statTestSteps)
+    updateActionButton(
+      session,
+      "nextStatTutorial",
+      label = if (isLast) "Done" else "Next"
+    )
   })
   
   output$statTutorialText <- renderUI({
