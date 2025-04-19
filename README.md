@@ -4,7 +4,7 @@ Deployed Web App: https://ruoshi-zhang.shinyapps.io/STAT5243_Project2_Team8/
 
 ## Project Overview
 
-We developed a Shiny app with two distinct UI versions (A and B). Users were randomly assigned to each version via URL query parameters, and user engagement was tracked using Google Analytics. Key events, including button clicks and session engagement, were recorded and analyzed to determine which version performed better.
+This project implements an A/B test using a Shiny web application called *Interactive Data Analysis App*. Users were randomly assigned to each version via URL query parameters, and user engagement was tracked using Google Analytics. Key events, including button clicks and session engagement, were recorded and analyzed to determine which version performed better.
 
 ## GitHub Files
 
