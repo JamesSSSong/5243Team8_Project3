@@ -8,7 +8,7 @@ This project implements an A/B test using a Shiny web application called *Intera
 
 ## GitHub Files
 
-- **web_dev (V2)**: Contains code for tutorial pop-up window and Google Analytics integration
+- **web_dev (V2)**: Contains code for tutorial pop-up window and Google Analytics integration.
 
 ## Experimental Design
 
