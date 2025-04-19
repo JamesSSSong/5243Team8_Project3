@@ -1909,6 +1909,15 @@ server <- function(input, output, session) {
     }
   })
   
+  observe({
+    isLast <- uniIndex() == length(univariateSteps)
+    updateActionButton(
+      session,
+      "nextUniTutorial",
+      label = if (isLast) "Done" else "Next"
+    )
+  })
+  
   output$uniTutorialText <- renderUI({
     HTML(univariateSteps[uniIndex()])
   })
@@ -1944,6 +1953,15 @@ server <- function(input, output, session) {
     }
   })
   
+  observe({
+    isLast <- bivIndex() == length(bivariateSteps)
+    updateActionButton(
+      session,
+      "nextBivTutorial",
+      label = if (isLast) "Done" else "Next"
+    )
+  })
+  
   output$bivTutorialText <- renderUI({
     HTML(bivariateSteps[bivIndex()])
   })
@@ -1977,6 +1995,15 @@ server <- function(input, output, session) {
     }
   })
   
+  observe({
+    isLast <- heatIndex() == length(heatmapSteps)
+    updateActionButton(
+      session,
+      "nextHeatTutorial",
+      label = if (isLast) "Done" else "Next"
+    )
+  })
+  
   output$heatTutorialText <- renderUI({
     HTML(heatmapSteps[heatIndex()])
   })
@@ -2008,6 +2035,15 @@ server <- function(input, output, session) {
       statTutorialShown(TRUE)
       shinyjs::runjs("window.scrollTo(0, 0);")
     }
+  })
+  
+  observe({
+    isLast <- statIndex() == length(statTestSteps)
+    updateActionButton(
+      session,
+      "nextStatTutorial",
+      label = if (isLast) "Done" else "Next"
+    )
   })
   
   output$statTutorialText <- renderUI({
