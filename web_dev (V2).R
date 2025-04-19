@@ -11,10 +11,58 @@ library(glmnet)
 library(olsrr)
 library(shinyjs)
 
+`%||%` <- function(a, b) {
+  if (!is.null(a)) a else b
+}
+
 # User Interface (UI)
 ui <- fluidPage(
   useShinyjs(),
   tags$head(
+    
+    #google analytics
+    HTML(glue::glue('
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){{dataLayer.push(arguments);}}
+    gtag("js", new Date());
+    gtag("config", "G-Y1XF4Z9S7Y");
+  </script>
+')),
+    #random AB group
+    tags$script(HTML("
+  (function() {
+    let group = localStorage.getItem('ab_group');
+    
+    if (!group) {
+      group = Math.random() < 0.5 ? 'A' : 'B';
+      localStorage.setItem('ab_group', group);
+    }
+    
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('group', group);
+    if (!window.location.href.includes('group=')) {
+      window.location.replace(currentUrl.toString());
+    }
+       
+    if (typeof gtag === 'function') {
+      gtag('set', {'user_properties': {'ab_group': group}});
+    }
+  })();
+")),
+    
+    tags$script(HTML("
+      Shiny.addCustomMessageHandler('trackEvent', function(data) {
+        gtag('event', data.event, {
+          'event_category': data.category,
+          'event_label': data.label
+        });
+      });
+    ")),
+    
+    
     tags$style(HTML("
     .tutorial-overlay {
       position: fixed;
@@ -168,6 +216,18 @@ ui <- fluidPage(
     tabPanel(
       title = "Feature Engineering",
       titlePanel("Feature Engineering"),
+      
+      shinyjs::hidden(
+        div(
+          id = "featureTutorialOverlay", 
+          class = "tutorial-overlay", 
+          div(
+            class = "tutorial-box", 
+            uiOutput("featureTutorialText"),
+            actionButton("nextFeatureTutorial", "Next", class = "btn btn-primary")
+          )
+        )
+      ),
       
       
       sidebarLayout(
@@ -897,10 +957,22 @@ server <- function(input, output, session) {
   NF_Data <- reactiveVal(data.frame())  
   new_feature_name <- reactiveVal(NULL)  
   
+  #check the user is group A or B
+  userGroup <- reactive({
+    parseQueryString(session$clientData$url_search)$group %||% "A"
+  })
+  
+  isTutorialGroup <- reactive({
+    userGroup() == "A"
+  })
+  
+  
   # Show the tutorial for Loading Datasets page
   observe({
-    shinyjs::show("loadingTutorialOverlay")  # Show the tutorial overlay
-    session$sendCustomMessage("disable-clicks-uni", TRUE)  # Disable other clicks temporarily
+    if(isTutorialGroup()){
+      shinyjs::show("loadingTutorialOverlay")  # Show the tutorial overlay
+      session$sendCustomMessage("disable-clicks-uni", TRUE)  # Disable other clicks temporarily
+    }
   })
   
   observeEvent(input$nextLoadingTutorial, {
@@ -927,6 +999,12 @@ server <- function(input, output, session) {
     origionData(df)
     reactiveData(df)
     summaryLog(c(summaryLog(), "Data loaded successfully."))
+    
+    session$sendCustomMessage("trackEvent", list(
+      event    = "LoadData",
+      category = userGroup(),
+      label    = "LoadingDatasets"
+    ))
   })
   
   dataProcessingSteps <- c(
@@ -945,7 +1023,7 @@ server <- function(input, output, session) {
   
   observe({
     req(input$mainTabs)
-    if (input$mainTabs == "preprocess" && !dataProcessingTutorialShown()) {
+    if (isTutorialGroup() && input$mainTabs == "preprocess" && !dataProcessingTutorialShown()) {
       dataProcessingIndex(1)
       shinyjs::show("dataProcessingTutorialOverlay")
       # disable other tabs just like your EDA code
@@ -964,7 +1042,7 @@ server <- function(input, output, session) {
       label = if (final_step) "Done" else "Next"
     )
   })
-
+  
   output$dataProcessingTutorialText <- renderUI({
     HTML(dataProcessingSteps[dataProcessingIndex()])
   })
@@ -999,6 +1077,12 @@ server <- function(input, output, session) {
   observeEvent(input$processData, {
     req(origionData())
     df <- origionData()
+    
+    session$sendCustomMessage("trackEvent", list(
+      event    = "ProcessData",
+      category = userGroup(),
+      label    = "DataPreprocess"
+    ))
     
     # 1. Remove Duplicates if checked
     if (input$removeDuplicates) {
@@ -1135,6 +1219,13 @@ server <- function(input, output, session) {
     df <- reactiveData()
     df <- apply_pca(df, input$pcaCols, input$numPCA)
     PCA_transformed_Data(df)
+    
+    session$sendCustomMessage("trackEvent", list(
+      event = "ApplyPCA",
+      category = userGroup(),
+      label = "FeatureEngineering"
+    ))
+    
   })
   
   
@@ -1153,6 +1244,13 @@ server <- function(input, output, session) {
   observeEvent(input$savePCA, {
     df<- PCA_transformed_Data()
     reactiveData(df)
+    
+    session$sendCustomMessage("trackEvent", list(
+      event = "SavePCA",
+      category = userGroup(),
+      label = "FeatureEngineering"
+    ))
+    
   })
   
   #feature selection
@@ -1161,6 +1259,12 @@ server <- function(input, output, session) {
     df <- reactiveData()
     result<- applyFS(df, input$FSyCols, input$FSCols,input$lambdaL,input$lambdaCV,input$criteriaFS)
     FS_result(result)
+    
+    session$sendCustomMessage("trackEvent", list(
+      event = "ApplyFeatureSelection",
+      category = userGroup(),
+      label = "FeatureEngineering"
+    ))
   })
   
   observe({
@@ -1235,12 +1339,24 @@ server <- function(input, output, session) {
     )
     NF_Data(updated_df)  
     new_feature_name(input$NewF)
+    
+    session$sendCustomMessage("trackEvent", list(
+      event = "ApplyNewFeature",
+      category = userGroup(),
+      label = "FeatureEngineering"
+    ))
   })
   
   
   observeEvent(input$saveNF,{
     req(NF_Data())
     reactiveData(NF_Data())
+    
+    session$sendCustomMessage("trackEvent", list(
+      event = "SaveNewFeature",
+      category = userGroup(),
+      label = "FeatureEngineering"
+    ))
   })
   
   output$newSummary <- renderPrint({
@@ -1643,32 +1759,19 @@ server <- function(input, output, session) {
   })
   
   univariateSteps <- c(
-    "<span style='font-size:18px;'>👋 Welcome to Univariate Analysis! Let’s explore one variable at a time.</span>",
-    
-    "<span style='font-size:18px;'>1️⃣ Select a <span style='font-size:22px; font-weight:bold;'>numerical variable</span> from the dropdown at the top left.</span>",
-    
-    "<span style='font-size:18px;'>2️⃣ Choose which charts to show: 
-    <span style='font-size:22px; font-weight:bold;'>Histogram</span>, 
-    <span style='font-size:22px; font-weight:bold;'>Boxplot</span>, or 
-    <span style='font-size:22px; font-weight:bold;'>Dotplot</span>.</span>",
-    
-    "<span style='font-size:18px;'>3️⃣ Customize 
-    <span style='font-size:22px; font-weight:bold;'>Histogram</span> 
-    (binwidth, start point, percent view).</span>",
-    
-    "<span style='font-size:18px;'>4️⃣ Select a 
-    <span style='font-size:22px; font-weight:bold;'>categorical variable</span> and pick 
-    <span style='font-size:22px; font-weight:bold;'>Bar Chart</span> or 
-    <span style='font-size:22px; font-weight:bold;'>Pie Chart</span>.</span>",
-    
-    "<span style='font-size:18px;'>✅ You're ready to analyze!</span>"
+    "<span style='font-size:18px;'>Welcome to Univariate Analysis! Let’s explore one variable at a time.</span>",
+    "<span style='font-size:18px;'>1️⃣ Select a <strong>numerical variable</strong> from the dropdown at the top left.</span>",
+    "<span style='font-size:18px;'>2️⃣ Choose which charts to show: <strong>Histogram</strong>, <strong>Boxplot</strong>, or <strong>Dotplot</strong>.</span>",
+    "<span style='font-size:18px;'>3️⃣ Customize your <strong>Histogram</strong> (binwidth, start point, percent view).</span>",
+    "<span style='font-size:18px;'>4️⃣ Select a <strong>categorical variable</strong> and pick a <strong>Bar Chart</strong> or <strong>Pie Chart</strong>.</span>",
+    "<span style='font-size:18px;'>✅ You’re ready to analyze!</span>"
   )
   
   uniIndex <- reactiveVal(1)
   uniTutorialShown <- reactiveVal(FALSE)
-                                  
+  
   observe({
-    if (input$edaTabs == "Univariate Analysis" && !uniTutorialShown()) {
+    if (isTutorialGroup() && input$edaTabs == "Univariate Analysis" && !uniTutorialShown()) {
       uniIndex(1)
       shinyjs::show("uniTutorialOverlay")
       session$sendCustomMessage("disable-clicks-uni", TRUE)
@@ -1692,19 +1795,19 @@ server <- function(input, output, session) {
   })
   
   bivariateSteps <- c(
-    "<span style='font-size:18px;'>👋 Welcome to Bivariate Analysis! This helps you explore relationships between two variables.</span>",
-    "<span style='font-size:18px;'>1️⃣ Select two <span style='font-size:22px; font-weight:bold;'>numerical variables</span> to visualize with <span style='font-size:22px; font-weight:bold;'>Scatter Plot</span> or <span style='font-size:22px; font-weight:bold;'>Line Plot</span>.</span>",
-    "<span style='font-size:18px;'>2️⃣ Add a <span style='font-size:22px; font-weight:bold;'>Smooth Line</span> for clearer trends (optional).</span>",
-    "<span style='font-size:18px;'>3️⃣ Select two <span style='font-size:22px; font-weight:bold;'>categorical variables</span> and choose a <span style='font-size:22px; font-weight:bold;'>Grouped</span>, <span style='font-size:22px; font-weight:bold;'>Stacked</span>, or <span style='font-size:22px; font-weight:bold;'>100% Stacked Bar Chart</span>.</span>",
-    "<span style='font-size:18px;'>4️⃣ Try <span style='font-size:22px; font-weight:bold;'>Categorical-Numerical</span> plots like <span style='font-size:22px; font-weight:bold;'>Boxplot</span> or <span style='font-size:22px; font-weight:bold;'>Violin Plot</span>.</span>",
-    "<span style='font-size:18px;'>✅ Great! You’re ready to explore two-variable relationships.</span>"
+    "<span style='font-size:18px;'>Welcome to Bivariate Analysis! This helps you explore relationships between two variables.</span>",
+    "<span style='font-size:18px;'>1️⃣ Select two <strong>numerical variables</strong> to visualize with <strong>Scatter Plot</strong> or <strong>Line Plot</strong>.</span>",
+    "<span style='font-size:18px;'>2️⃣ Add a <strong>Smooth Line</strong> for clearer trends (optional).</span>",
+    "<span style='font-size:18px;'>3️⃣ Select two <strong>categorical variables</strong> and choose a <strong>Grouped</strong>, <strong>Stacked</strong>, or <strong>100% Stacked Bar Chart</strong>.</span>",
+    "<span style='font-size:18px;'>4️⃣ Try <strong>Categorical‑Numerical</strong> plots like <strong>Boxplot</strong> or <strong>Violin Plot</strong>.</span>",
+    "<span style='font-size:18px;'>✅ Great! You’re ready to explore two‑variable relationships.</span>"
   )
   
   bivIndex <- reactiveVal(1)
   bivTutorialShown <- reactiveVal(FALSE)
   
   observe({
-    if (input$edaTabs == "Bivariate Analysis" && !bivTutorialShown()) {
+    if (isTutorialGroup() && input$edaTabs == "Bivariate Analysis" && !bivTutorialShown()) {
       bivIndex(1)
       shinyjs::show("bivTutorialOverlay")
       session$sendCustomMessage("disable-clicks-uni", TRUE)
@@ -1727,9 +1830,9 @@ server <- function(input, output, session) {
   })
   
   heatmapSteps <- c(
-    "<span style='font-size:18px;'>🧊 Welcome to the Heat Map! Here you’ll see <span style='font-size:22px; font-weight:bold;'>correlations</span> among numerical variables.</span>",
-    "<span style='font-size:18px;'>1️⃣ A <span style='font-size:22px; font-weight:bold;'>Correlation Matrix</span> is color-coded: darker means stronger correlation.</span>",
-    "<span style='font-size:18px;'>2️⃣ Use it to detect variables with <span style='font-size:22px; font-weight:bold;'>high correlation</span> or <span style='font-size:22px; font-weight:bold;'>potential multicollinearity</span>.</span>",
+    "<span style='font-size:18px;'>Welcome to the Heat Map! Here you’ll see correlations among numerical variables.</span>",
+    "<span style='font-size:18px;'>1️⃣ A <strong>Correlation Matrix</strong> is color‑coded: darker means stronger correlation.</span>",
+    "<span style='font-size:18px;'>2️⃣ Use it to detect variables with <strong>high correlation</strong> or <strong>potential multicollinearity</strong>.</span>",
     "<span style='font-size:18px;'>✅ Done! Use these insights for feature engineering or regression prep.</span>"
   )
   
@@ -1737,7 +1840,7 @@ server <- function(input, output, session) {
   heatTutorialShown <- reactiveVal(FALSE)
   
   observe({
-    if (input$edaTabs == "Heat Map" && !heatTutorialShown()) {
+    if (isTutorialGroup() && input$edaTabs == "Heat Map" && !heatTutorialShown()) {
       heatIndex(1)
       shinyjs::show("heatTutorialOverlay")
       session$sendCustomMessage("disable-clicks-uni", TRUE)
@@ -1760,9 +1863,9 @@ server <- function(input, output, session) {
   })
   
   statTestSteps <- c(
-    "<span style='font-size:18px;'>🧪 Welcome to Statistical Tests! Run formal tests between variables.</span>",
-    "<span style='font-size:18px;'>1️⃣ Choose two <span style='font-size:22px; font-weight:bold;'>numerical variables</span> and select <span style='font-size:22px; font-weight:bold;'>Pearson</span> or <span style='font-size:22px; font-weight:bold;'>Kendall</span> correlation test.</span>",
-    "<span style='font-size:18px;'>2️⃣ Choose two <span style='font-size:22px; font-weight:bold;'>categorical variables</span> and apply the <span style='font-size:22px; font-weight:bold;'>Chi-Square Test</span>.</span>",
+    "<span style='font-size:18px;'>Welcome to Statistical Tests! Run formal tests between variables.</span>",
+    "<span style='font-size:18px;'>1️⃣ Choose two <strong>numerical variables</strong> and select <strong>Pearson</strong> or <strong>Kendall</strong> correlation test.</span>",
+    "<span style='font-size:18px;'>2️⃣ Choose two <strong>categorical variables</strong> and apply the <strong>Chi‑Square Test</strong>.</span>",
     "<span style='font-size:18px;'>✅ Results appear on the right — ready for interpretation.</span>"
   )
   
@@ -1770,7 +1873,7 @@ server <- function(input, output, session) {
   statTutorialShown <- reactiveVal(FALSE)
   
   observe({
-    if (input$edaTabs == "Statistical Test" && !statTutorialShown()) {
+    if (isTutorialGroup() && input$edaTabs == "Statistical Test" && !statTutorialShown()) {
       statIndex(1)
       shinyjs::show("statTutorialOverlay")
       session$sendCustomMessage("disable-clicks-uni", TRUE)
@@ -1792,8 +1895,65 @@ server <- function(input, output, session) {
     }
   })
   
+  featureSteps <- c(
+    "<span style='font-size:18px;'>Welcome to Feature Engineering! Let's explore the features of the data.</span>",
+    "<span style='font-size:18px;'>1️⃣ Choose method you want to use <strong>PCA, feature selection or making new feature</strong> .</span>",
+    "<span style='font-size:18px;'>2️⃣ Apply <strong>Principal Component Analysis </strong> to reduce dimensionality.</span>",
+    "<span style='font-size:18px;'>3️⃣ Choose your preferred <strong>Feature Selection</strong> method to identify the most informative variables.</span>",
+    "<span style='font-size:18px;'>4️⃣ Create your own <strong>custom features</strong> by applying mathematical transformations or combining existing columns.</span>",
+    "<span style='font-size:18px;'>✅ All set! Click <strong>Apply button</strong> for each methods to run and don't forget click the <strong>Save button</strong> if you want to save the pc / feature you made.</span>"
+  )
+  
+  featureIndex_FE <- reactiveVal(1)
+  featureTutorialShown_FE <- reactiveVal(FALSE)
+  
+  observe({
+    if (isTutorialGroup() && input$mainTabs == "Feature Engineering" && !featureTutorialShown_FE()) {
+      featureIndex_FE(1)
+      shinyjs::show("featureTutorialOverlay")
+      session$sendCustomMessage("disable-clicks-uni", TRUE)
+      featureTutorialShown_FE(TRUE)
+      shinyjs::runjs("window.scrollTo(0, 0);")
+    }
+  })
+  
+  output$featureTutorialText <- renderUI({
+    HTML(featureSteps[featureIndex_FE()])
+  })
+  
+  observeEvent(input$nextFeatureTutorial, {
+    if (featureIndex_FE() < length(featureSteps)) {
+      featureIndex_FE(featureIndex_FE() + 1)
+    } else {
+      shinyjs::hide("featureTutorialOverlay")
+      session$sendCustomMessage("disable-clicks-uni", FALSE)
+    }
+  })
+  
+  observe({
+    req(input$mainTabs)
+    if (input$mainTabs == "Feature Engineering") {
+      shinyjs::runjs("window.scrollTo(0, 0);")
+    }
+  })
+  
+  observe({
+    final_step_FE <-FALSE
+    req(input$mainTabs == "Feature Engineering")
+    if(featureIndex_FE() == length(featureSteps)){
+      final_step_FE <- TRUE
+    }  
+    updateActionButton(
+      session,
+      "nextFeatureTutorial",
+      label = if (final_step_FE) "Done" else "Next"
+    )  
+  })
+  
+  userGroup <- reactive({
+    parseQueryString(session$clientData$url_search)$group %||% "A"
+  })
   
 }
-
 # Run Shiny App
 shinyApp(ui, server)
