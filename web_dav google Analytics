@@ -46,7 +46,7 @@ ui <- fluidPage(
     if (!window.location.href.includes('group=')) {
       window.location.replace(currentUrl.toString());
     }
-    
+       
     if (typeof gtag === 'function') {
       gtag('set', {'user_properties': {'ab_group': group}});
     }
@@ -1207,6 +1207,13 @@ isTutorialGroup <- reactive({
     df <- reactiveData()
     df <- apply_pca(df, input$pcaCols, input$numPCA)
     PCA_transformed_Data(df)
+    
+     session$sendCustomMessage("trackEvent", list(
+    event = "ApplyPCA",
+    category = userGroup(),
+    label = "FeatureEngineering"
+  ))
+    
   })
   
   
@@ -1240,6 +1247,12 @@ isTutorialGroup <- reactive({
     df <- reactiveData()
     result<- applyFS(df, input$FSyCols, input$FSCols,input$lambdaL,input$lambdaCV,input$criteriaFS)
     FS_result(result)
+    
+    session$sendCustomMessage("trackEvent", list(
+    event = "ApplyFeatureSelection",
+    category = userGroup(),
+    label = "FeatureEngineering"
+  ))
   })
   
   observe({
@@ -1314,12 +1327,24 @@ isTutorialGroup <- reactive({
     )
     NF_Data(updated_df)  
     new_feature_name(input$NewF)
+    
+    session$sendCustomMessage("trackEvent", list(
+    event = "ApplyNewFeature",
+    category = userGroup(),
+    label = "FeatureEngineering"
+  ))
   })
   
   
   observeEvent(input$saveNF,{
     req(NF_Data())
     reactiveData(NF_Data())
+    
+    session$sendCustomMessage("trackEvent", list(
+    event = "SaveNewFeature",
+    category = userGroup(),
+    label = "FeatureEngineering"
+  ))
   })
   
   output$newSummary <- renderPrint({
@@ -1816,7 +1841,7 @@ isTutorialGroup <- reactive({
   heatTutorialShown <- reactiveVal(FALSE)
   
   observe({
-    if (input$edaTabs == "Heat Map" && !heatTutorialShown()) {
+    if (isTutorialGroup() && input$edaTabs == "Heat Map" && !heatTutorialShown()) {
       heatIndex(1)
       shinyjs::show("heatTutorialOverlay")
       session$sendCustomMessage("disable-clicks-uni", TRUE)
@@ -1849,7 +1874,7 @@ isTutorialGroup <- reactive({
   statTutorialShown <- reactiveVal(FALSE)
   
   observe({
-    if (input$edaTabs == "Statistical Test" && !statTutorialShown()) {
+    if (isTutorialGroup() && input$edaTabs == "Statistical Test" && !statTutorialShown()) {
       statIndex(1)
       shinyjs::show("statTutorialOverlay")
       session$sendCustomMessage("disable-clicks-uni", TRUE)
