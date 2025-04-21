@@ -134,5 +134,46 @@ results_ctr_bootstrape$name[results_ctr_bootstrape$ci_low > 0 | results_ctr_boot
 ```
 
 ```{r}
+#bounce_rate
+dfa_br <- dfa[dfa$name %in% common_names, ]
+dfb_br <- dfb[dfb$name %in% common_names, ]
+df_br <- rbind(dfa_br, dfb_br)
 
+results_br_prop <- df_br %>%
+  group_by(name) %>%
+  reframe({
+    test <- prop.test(bounce_rate*total_session, total_session)
+    data.frame(
+      p_value = test$p.value,
+      br_low = test$conf.int[1],
+      br_high = test$conf.int[2]
+    )
+  })
+```
+
+```{r}
+results_br_prop
+results_br_prop$name[!is.na(results_br_prop$p_value) & results_br_prop$p_value < 0.05]
+```
+
+```{r}
+results_br_fisher <- df_br %>%
+  group_by(name) %>%
+  reframe({
+      bounce <- round(total_session * bounce_rate)
+      non_bounce <- total_session - bounce
+      mat <- matrix(c(bounce, non_bounce), nrow = 2)
+      test <- fisher.test(mat)
+      out <- data.frame(
+        BR_A = bounce_rate[group == "A"],
+        BR_B = bounce_rate[group == "B"],
+        p_value = test$p.value
+      )
+    }
+  )
+```
+
+```{r}
+results_br_fisher
+results_br_fisher$name[!is.na(results_br_fisher$p_value) & results_br_fisher$p_value < 0.05]
 ```
