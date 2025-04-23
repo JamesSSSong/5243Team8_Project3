@@ -1,5 +1,5 @@
 ---
-title: "Final Report"
+title: "Assessing the Impact of Guided Tutorials on User Behavior: An A/B Test in Interactive Data Analysis App"
 author: "Team 8: Dailin Song (ds4354), Yi Lu (yl5735), Ruoshi Zhang (rz2699)"
 format: pdf
 editor: visual
@@ -7,7 +7,7 @@ editor: visual
 
 Deployed Web App: <https://ruoshi-zhang.shinyapps.io/Project3_AB_test/>
 
-GitHub Repository Link:<https://github.com/JamesSSSong/5243Team8_Project3/tree/main>
+GitHub Repository: <https://github.com/JamesSSSong/5243Team8_Project3/tree/main>
 
 ## Introduction
 
@@ -43,13 +43,15 @@ The deployed web link was emailed out to students from STAT 4243/5243 and statis
 
 1.  Compare click-through rate (CTR) between two groups
 
-```{r echo: false, output: false}
+```{r}
+#| include: false
 library(dplyr)
 library(ggplot2)
 library(tidyr)
 ```
 
-```{r echo: false, output: false}
+```{r}
+#| include: false
 #Data preprocess
 data<-read.csv("~/Downloads/download.csv",skip = 6,row.names = NULL)
 data2<-read.csv("~/Downloads/download (1).csv",skip = 6,row.names = NULL)
@@ -71,7 +73,8 @@ rownames(dfa) <- NULL
 rownames(dfb) <- NULL  
 ```
 
-```{r echo: false, output: false}
+```{r}
+#| include: false
 #I use CTR = session / total number of session
 dfa$CTR = dfa$session / na_session
 dfb$CTR = dfb$session / nb_session
@@ -81,6 +84,7 @@ df_ab <- rbind(dfa, dfb)
 ```
 
 ```{r echo: false}
+#| echo: false
 ggplot(df_ab, aes(x = name, y = CTR, fill = group)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "CTR Comparison by Event",
@@ -99,7 +103,8 @@ Since the sample size is quite small, we further tried Fisher's exact test and B
 
 2.  Compare bounce rate between two groups
 
-```{r echo: false}
+```{r}
+#| echo: false
 ggplot(df_ab, aes(x = name, y = bounce_rate , fill = group)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "Bounce Rate Comparison by Event",
