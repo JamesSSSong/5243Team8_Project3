@@ -1,0 +1,119 @@
+---
+title: "Final Report"
+author: "Team 8: Dailin Song (ds4354), Yi Lu (yl5735), Ruoshi Zhang (rz2699)"
+format: pdf
+editor: visual
+---
+
+Deployed Web App: <https://ruoshi-zhang.shinyapps.io/Project3_AB_test/>
+
+GitHub Repository Link:<https://github.com/JamesSSSong/5243Team8_Project3/tree/main>
+
+## Introduction
+
+This project implements an A/B test using a Shiny web application called Interactive Data Analysis App. Users were randomly assigned to each version via URL query parameters, and user engagement was tracked using Google Analytics. Key events, including button clicks, bounce rate, and time spend on certain section were recorded and analyzed to determine which version performed better.
+
+**Research Question**: Does a guided tutorial interface (Group A) lead to greater user engagement compared to the simplified version (Group B)?
+
+## Experimental Design & Methodology
+
+-   **Independent Variable**: Random group assignment (A or B)
+
+-   **Dependent Variable**: Button click counts, bounce rate, average session duration
+
+To fulfill random assignment, we used JavaScript to assign each user a group and redirects the URL using `?group=A` or `?group=B`. Furthermore, Google Analytics (GA) is integrated into R Shiny to track each user's activities. We customized events for tracking button clicks, such as `LoadData`, `ProcessData`, `SavePCA`, `ApplyFeatureSelection`, `SaveNewFeature`, `EnableHistogram` and other EDA graphing buttons. In addition, two levels of grouping, `group` (event-scoped) and `ab_group` (user-scoped) were also sent to GA for further use.
+
+## Data Collection
+
+The deployed web link was emailed out to students from STAT 4243/5243 and statistics major. Data are collected through GA. It is important to note that GA only provides records in terms of groups and there are no individual user's records. The metrics under the dimension of groups and event being considered are:
+
+-   Sessions: The number of sessions.
+
+-   Event count: The number of times a specific action was logged by users from different groups.
+
+-   Total users: The total count of distinct users triggered an event.
+
+-   Bounce rate: The percentage of sessions where users did not actively engage.
+
+-   Average session duration: The average time (in seconds) users spent per session.
+
+-   Tutorial duration (customized metric): The average time users (in seconds) spend going through instruction windows.
+
+## Statistical Analysis & Results
+
+1.  Compare click-through rate (CTR) between two groups
+
+```{r echo: false, output: false}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+```{r echo: false, output: false}
+#Data preprocess
+data<-read.csv("~/Downloads/download.csv",skip = 6,row.names = NULL)
+data2<-read.csv("~/Downloads/download (1).csv",skip = 6,row.names = NULL)
+colnames(data) <- c('name','group','session','event','active_user','user','bounce_rate','session_time' )
+n_session<- data[1,3]
+n_event<-data2[1,4]
+n_active_user = data2[1,5]
+n_user = data2[1,6]
+na_session<-data2[3,4]
+na_event<-data2[3,5]
+nb_session<-data2[4,4]
+nb_event<-data2[4,5]
+df1<-data[-1,-9]
+df1<-df1[df1$group %in% c("A", "B"), ]
+dfa<-df1[df1$group == "A",]
+dfb<-df1[df1$group == "B",]
+rownames(df1) <- NULL  
+rownames(dfa) <- NULL  
+rownames(dfb) <- NULL  
+```
+
+```{r echo: false, output: false}
+#I use CTR = session / total number of session
+dfa$CTR = dfa$session / na_session
+dfb$CTR = dfb$session / nb_session
+dfa$total_session <- rep(na_session,length(dfa$name))
+dfb$total_session <- rep(nb_session,length(dfb$name))
+df_ab <- rbind(dfa, dfb)
+```
+
+```{r echo: false}
+ggplot(df_ab, aes(x = name, y = CTR, fill = group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "CTR Comparison by Event",
+       x = "Event",
+       y = "Click-Through Rate") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+Given $CTR = \frac{session}{total number of session}$, the graph above displays group A and B's CTR of every event. `user_engagement` and `scroll` have high rates in both groups, indicating that users are generally engaged with the content. Users from group A who click through the data preprocessing section with a higher rate. Some buttons from EDA section, such as boxplot for categorical vs. numerical variables and bar chart for bivariate categorical variables, also shows higher rate in group A. The other events seems have similar CTR for both groups.
+
+A chi-squared test was applied to whether whether CTR are different for group A and B and the results show that only two buttons from EDA section, `CatNumPlotType_Boxplot` and `CatPlotType_Grouped Bar Chart`, have some significant difference while all the others did not.
+
+Since the sample size is quite small, we further tried Fisher's exact test and Bootstrap to see the different but the results were the same as the chi-squared test. We can conclude that there is no evidence supporting that the general CTR is different between two groups whereas only some events were clicked at significantly different rates.
+
+2.  Compare bounce rate between two groups
+
+```{r echo: false}
+ggplot(df_ab, aes(x = name, y = bounce_rate , fill = group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Bounce Rate Comparison by Event",
+       x = "Event",
+       y = "Bounce Rate") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+The plots reveal that group A has noticeably higher bounce rates on events like `CatNumPlotType_Boxplot` and `CatNumPlotType_Violin Plot` and group B shows higher bounce rate on events `EnableBoxplot`, `EnableDotplot`, and `EnableHistogram`. Other customized events all remain a rate of 0 meaning there is no bouncing happened.
+
+By implementing chi-squared test and Fisher's exact test, a significant difference in bounce rates can be observed on events: `CatNumPlotType_Boxplot`, `CatPlotType_Grouped Bar Chart`, `EnableBoxplot`, `EnableDotplot`, `EnableHistogram`, and `form_start`.
+
+Since group B shows a clearly higher bar for Group B on `form_start` than Group A, which conveys that users in Group B are more likely to abandon the page shortly after their first interaction with a form. In the EDA section, both groups have users who leave the page after looking at certain graphical displays.
+
+## Interpretation & Conclusion
