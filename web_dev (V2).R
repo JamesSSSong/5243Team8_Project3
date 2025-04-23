@@ -20,6 +20,24 @@ ui <- fluidPage(
   useShinyjs(),
   tags$head(
     
+    tags$script(HTML("
+  var preprocessStartTime;
+
+  function startPreprocessStep(stepIndex) {
+    preprocessStartTime = new Date().getTime();
+  }
+
+  function endPreprocessStep(stepIndex) {
+    var endTime = new Date().getTime();
+    var duration = (endTime - preprocessStartTime) / 1000;
+    Shiny.setInputValue('preprocessStepEnded', {
+      step: stepIndex,
+      duration: duration,
+      timestamp: new Date().toISOString()
+    }, {priority: 'event'});
+  }
+")),
+    
     #google analytics
     HTML(glue::glue('
   <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -1025,11 +1043,10 @@ server <- function(input, output, session) {
   dataProcessingTutorialShown <- reactiveVal(FALSE)
   
   observe({
-    req(input$mainTabs)
     if (isTutorialGroup() && input$mainTabs == "preprocess" && !dataProcessingTutorialShown()) {
       dataProcessingIndex(1)
+      shinyjs::runjs("startPreprocessStep(1);")
       shinyjs::show("dataProcessingTutorialOverlay")
-      # disable other tabs just like your EDA code
       session$sendCustomMessage("disable-clicks-data", TRUE)
       dataProcessingTutorialShown(TRUE)
       shinyjs::runjs("window.scrollTo(0, 0);")
@@ -1051,12 +1068,22 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$nextDataProcessingTutorial, {
+    shinyjs::runjs(paste0("endPreprocessStep(", dataProcessingIndex(), ");"))
+    
     if (dataProcessingIndex() < length(dataProcessingSteps)) {
       dataProcessingIndex(dataProcessingIndex() + 1)
+      shinyjs::runjs(paste0("startPreprocessStep(", dataProcessingIndex(), ");"))
     } else {
       shinyjs::hide("dataProcessingTutorialOverlay")
       session$sendCustomMessage("disable-clicks-data", FALSE)
     }
+  })
+  
+  observeEvent(input$preprocessStepEnded, {
+    info <- input$preprocessStepEnded
+    print(paste(
+      "[Timer] Step", info$step, ":", round(info$duration, 2), "sec at", info$timestamp
+    ))
   })
   
   observe({
