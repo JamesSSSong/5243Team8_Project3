@@ -1,0 +1,243 @@
+---
+title: "5243 Project 3"
+format: html
+editor: visual
+---
+
+```{r}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+```
+
+```{r}
+#Data preprocess
+data<-read.csv("~/Downloads/download.csv",skip = 6,row.names = NULL)
+data2<-read.csv("~/Downloads/download (1).csv",skip = 6,row.names = NULL)
+colnames(data) <- c('name','group','session','event','active_user','user','bounce_rate','session_time' )
+n_session<- data[1,3]
+n_event<-data2[1,4]
+n_active_user = data2[1,5]
+n_user = data2[1,6]
+na_session<-data2[3,4]
+na_event<-data2[3,5]
+nb_session<-data2[4,4]
+nb_event<-data2[4,5]
+df1<-data[-1,-9]
+df1<-df1[df1$group %in% c("A", "B"), ]
+dfa<-df1[df1$group == "A",]
+dfb<-df1[df1$group == "B",]
+rownames(df1) <- NULL  
+rownames(dfa) <- NULL  
+rownames(dfb) <- NULL  
+```
+
+```{r}
+#I use CTR = session / total number of session
+dfa$CTR = dfa$session / na_session
+dfb$CTR = dfb$session / nb_session
+dfa$total_session <- rep(na_session,length(dfa$name))
+dfb$total_session <- rep(nb_session,length(dfb$name))
+df_ab <- rbind(dfa, dfb)
+```
+
+```{r}
+dfa
+dfb
+```
+
+```{r}
+ggplot(df_ab, aes(x = name, y = CTR, fill = group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "CTR Comparison by Event",
+       x = "Event",
+       y = "Click-Through Rate") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r}
+ggplot(df_ab, aes(x = name, y = bounce_rate , fill = group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Bounce Rate Comparison by Event",
+       x = "Event",
+       y = "Bounce Rate") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r}
+df_BR_remove0 <- df_ab %>%
+  group_by(name) %>%
+  filter(all(bounce_rate != 0)) %>%
+  ungroup()
+
+ggplot(df_ab, aes(x = name, y = bounce_rate , fill = group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Bounce Rate Comparison by Event",
+       x = "Event",
+       y = "Bounce Rate") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r}
+#漏斗图。最后savePCA异常的高，说明有人没认真检测。只是随便找了几个按钮按按
+funnel_pca_step <- c("page_view", "LoadData", "ApplyPCA", "SavePCA")
+
+funnel_pca <- df_ab %>%
+  filter(name %in% funnel_pca_step) %>%
+  group_by(name, group) %>%
+  summarise(users = sum(event), .groups = "drop") %>%
+  pivot_wider(names_from = group, values_from = users, names_prefix = "users_") %>%
+  dplyr::rename(stage = name) %>%
+  mutate(stage = factor(stage, levels = funnel_pca_step)) %>%
+  arrange(stage)
+
+funnel_long <- funnel_pca %>%
+  pivot_longer(cols = starts_with("users_"),
+               names_to = "group",
+               names_prefix = "users_",
+               values_to = "users")
+
+ggplot(funnel_long, aes(x = stage, y = users, fill = group)) +
+  geom_col(position = "dodge") +
+  labs(title = "A/B Funnel Comparison", y = "Users", x = "Stage") +
+  theme_minimal()
+```
+
+```{r}
+#CTR
+#data prepare for CTR. At this time, some sessions is still null. 
+#Avoid error in test, only choose data that group a and b both have
+common_names <- intersect(dfa$name, dfb$name)
+dfa_ctr <- dfa[dfa$name %in% common_names, ]
+dfb_ctr <- dfb[dfb$name %in% common_names, ]
+df_ctr <- rbind(dfa_ctr, dfb_ctr)
+
+results_ctr_prop <- df_ctr %>%
+  group_by(name) %>%
+  reframe({
+    test <- prop.test(session, total_session)
+    data.frame(
+      CTR_A = session[group == "A"] / total_session[group == "A"],
+      CTR_B = session[group == "B"] / total_session[group == "B"],
+      p_value = test$p.value,
+      ci_low = test$conf.int[1],
+      ci_high = test$conf.int[2]
+    )
+  })
+```
+
+```{r}
+results_ctr_prop
+results_ctr_prop$name[results_ctr_prop$p_value < 0.05]
+```
+
+```{r}
+#The warn in prop shows some session value is too samll. make the X^2 approx. incorrect
+#I will try fisher to avoid this problem
+results_ctr_fisher <- df_ctr %>%
+  group_by(name) %>%
+  reframe({
+      clicks <- session
+      non_clicks <- total_session - session
+      mat <- matrix(c(clicks, non_clicks), nrow = 2)
+      test <- fisher.test(mat)
+      out <- data.frame(
+        CTR_A = clicks[group == "A"] / total_session[group == "A"],
+        CTR_B = clicks[group == "B"] / total_session[group == "B"],
+        p_value = test$p.value
+      )
+    }
+  )
+```
+
+```{r}
+results_ctr_fisher
+results_ctr_fisher$name[results_ctr_fisher$p_value < 0.05]
+```
+
+```{r}
+#the data size is small, we can use bootsrtap
+simulate_group <- function(clicks, total) {
+  c(rep(1, clicks), rep(0, total - clicks))
+}
+results_ctr_bootstrape<-data.frame()
+
+for (n in common_names) {
+  a_row <- dfa[dfa$name == n, ]
+  b_row <- dfb[dfb$name == n, ]
+
+  clicks_A <- simulate_group(a_row$session, a_row$total_session)
+  clicks_B <- simulate_group(b_row$session, b_row$total_session)
+
+  boot_diffs <- replicate(10000, {
+    mean(sample(clicks_B, replace = TRUE)) - mean(sample(clicks_A, replace = TRUE))
+  })
+
+  ci <- quantile(boot_diffs, c(0.025, 0.975))
+
+  results_ctr_bootstrape <- rbind(results_ctr_bootstrape, data.frame(
+    name = n,
+    CTR_A = mean(clicks_A),
+    CTR_B = mean(clicks_B),
+    diff = mean(clicks_B) - mean(clicks_A),
+    ci_low = ci[1],
+    ci_high = ci[2]
+  ))
+}
+```
+
+```{r}
+results_ctr_bootstrape
+results_ctr_bootstrape$name[results_ctr_bootstrape$ci_low > 0 | results_ctr_bootstrape$ci_high < 0]
+```
+
+```{r}
+#bounce_rate
+dfa_br <- dfa[dfa$name %in% common_names, ]
+dfb_br <- dfb[dfb$name %in% common_names, ]
+df_br <- rbind(dfa_br, dfb_br)
+
+results_br_prop <- df_br %>%
+  group_by(name) %>%
+  reframe({
+    test <- prop.test(bounce_rate*total_session, total_session)
+    data.frame(
+      p_value = test$p.value,
+      br_low = test$conf.int[1],
+      br_high = test$conf.int[2]
+    )
+  })
+```
+
+```{r}
+results_br_prop
+results_br_prop$name[!is.na(results_br_prop$p_value) & results_br_prop$p_value < 0.05]
+```
+
+```{r}
+results_br_fisher <- df_br %>%
+  group_by(name) %>%
+  reframe({
+      bounce <- round(total_session * bounce_rate)
+      non_bounce <- total_session - bounce
+      mat <- matrix(c(bounce, non_bounce), nrow = 2)
+      test <- fisher.test(mat)
+      out <- data.frame(
+        BR_A = bounce_rate[group == "A"],
+        BR_B = bounce_rate[group == "B"],
+        p_value = test$p.value
+      )
+    }
+  )
+```
+
+```{r}
+results_br_fisher
+results_br_fisher$name[!is.na(results_br_fisher$p_value) & results_br_fisher$p_value < 0.05]
+```
