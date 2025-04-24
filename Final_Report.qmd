@@ -122,6 +122,7 @@ By implementing the chi-squared test and Fisher's exact test, a significant diff
 Group B shows a clearly higher bar for Group B on `form_start` than Group A, which conveys that users in Group B are more likely to abandon the page shortly after their first interaction with a form. In the EDA section, both groups have users who leave the page after looking at certain graphical displays.
 
 3.  Compare total average session duration between two groups
+
 ```{r}
 #| echo: false
 ta2 <- ta - 12.875 
@@ -138,17 +139,20 @@ plot(s_range, p_values, type = "l", lwd = 2,
      main = "Sensitivity Analysis of t-test")
 abline(h = 0.05, lty = 2)
 ```
+
 ```{r}
 #| echo: false
 x <- rnorm(na_session, mean = ta2, sd = 2)
 y <- rnorm(nb_session, mean = tb, sd = 2)
 t.test(x, y)
 ```
+
 Before implementing statistical tests for means, a sensitivity analysis was first conducted by varying the assumed standard deviation between 0.5 and 10. Across the full range, the p-value remained effectively zero, indicating that the t-test result is highly robust to uncertainty in the variance estimate.
 
 A two-sample t-test is applied to assess whether the average session time differs between Group A and B with a standard deviation setting to 2. The extremely small p-value indicates a highly significant difference between the two group means. Moreover, the negative t-statistics and interval mean confirm that Group B has a significantly higher mean than Group A.
 
-4. Other observations
+4.  Other observations
+
 ```{r}
 #| echo: false
 #| warning: false
@@ -173,22 +177,53 @@ funnel_long <- funnel_pca %>%
 ggplot(funnel_long, aes(x = stage, y = users, fill = group)) +
   geom_col(position = "dodge") +
   labs(title = "A/B Funnel Comparison", y = "Users", x = "Stage") +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
+
 We further built a funnel analysis to compare how users in Groups A and B progress through key stages of feature engineering related interaction. The graph shows that within users in Group A, no one really touched the `Apply PCA` button but only touched the `Save PCA` button.
 
 ## Interpretation & Conclusion
 
-While Group A displayed marginally higher CTRs in some stages, especially in EDA, the overall interaction patterns between groups were similar. Only two EDA tools showed a statistically significant difference in usage rates. This suggests that the tutorial may guide users to specific features, but it does not drastically change users' overall engagement or behavior patterns. 
+While Group A displayed marginally higher CTRs in some stages, especially in EDA, the overall interaction patterns between groups were similar. Only two EDA tools showed a statistically significant difference in usage rates. This suggests that the tutorial may guide users to specific features, but it does not drastically change users' overall engagement or behavior patterns.
 
-Bounce rate analysis further supports this finding. Overall, the presence of a tutorial does not lead to a substantial reduction in bounce rates. While Group A may exit more frequently after completing structured steps, and Group B may disengage due to exploration fatigue, these tendencies are event-specific rather than widespread behavioral differences. 
+Bounce rate analysis further supports this finding. Overall, the presence of a tutorial does not lead to a substantial reduction in bounce rates. While Group A may exit more frequently after completing structured steps, and Group B may disengage due to exploration fatigue, these tendencies are event-specific rather than widespread behavioral differences.
 
 While the tutorial may guide user actions, it does not appear to increase overall session time. In fact, users without the tutorial (Group B) remained active for longer, potentially due to more open-ended exploration or less structured task completion. This suggests that tutorials may lead users to accomplish tasks more efficiently, resulting in shorter but more purposeful sessions.
 
-One possible explanation is that some users in Group A may look through the tutorial superficially, and further "engage" with the app, driven by the understanding their interaction was part of the data collection process. This is further illustrated in our funnel analysis, where many users skipped clicking Apply PCA (which generates PCA results) and proceeded directly to Save PCA, which stores results. This confirms that some users may have followed instructions passively without truly interacting with the analysis steps.
+One possible explanation is that some users in Group A may look through the tutorial superficially, and further "engage" with the app driven by the understanding their interaction was part of the data collection process. This is further illustrated in our funnel analysis, where many users skipped clicking Apply PCA (which generates PCA results) and proceeded directly to Save PCA, which stores results. This confirms that some users may have followed instructions passively without truly interacting with the analysis steps.
 
 In summary, the tutorial successfully directed users to certain features and made their navigation more efficient, but it had little impact on overall click-through rates or bounce rates. While Group A completed tasks more efficiently, Group B users spent more time exploring. This suggests that tutorials enhance task orientation but may limit deeper, self-driven exploration.
 
 ## Challenges & Limitations
 
 The main challenge of this project was the delay in data updates from Google Analytics, particularly when using custom dimensions. This slows down debugging, A/B testing validation, and general development feedback procedures. Since most participants were classmates familiar with the project’s purpose, their behavior may have been influenced by prior expectations, potentially limiting the representativeness of the results and introducing bias. Last but not least, the sample size in this study was relatively small, which limits the statistical power of the analysis. With fewer participants, it becomes harder to detect subtle differences between groups, increasing the likelihood of Type II errors.
+
+## Contribution
+
+-   Yi Lu (yl5735)
+
+    -   Modify original app code for adding instruction windows for the `Feature Engineering` section
+
+    -   Add code for tracking click counts of buttons from the `Feature Engineering` section
+
+    -   Integrate Google Analytics to shiny
+
+    -   Export data from GA
+
+    -   Implement all statistical tests
+
+-   Dailin Song (ds4354)
+
+    -   Modify original app code for adding instruction windows for the `EDA` section
+    -   Add code for tracking click counts of many buttons from the `EDA` section
+    -   Add code for tracking time spent on pop-up windows for use on statistical test
+    -   Follow realtime data on GA
+
+-   Ruoshi Zhang (rz2699)
+
+    -   Modify original app code for adding instruction windows for the `Loading Datasets` and `Data Preprocessing` sections
+
+    -   Add code for tracking click counts of two buttons from the `Loading Datasets` and `Data Preprocessing` sections
+
+    -   Final report

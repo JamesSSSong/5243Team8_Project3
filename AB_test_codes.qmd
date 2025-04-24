@@ -110,7 +110,8 @@ funnel_long <- funnel_pca %>%
 ggplot(funnel_long, aes(x = stage, y = users, fill = group)) +
   geom_col(position = "dodge") +
   labs(title = "A/B Funnel Comparison", y = "Users", x = "Stage") +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
 
 ```{r}
