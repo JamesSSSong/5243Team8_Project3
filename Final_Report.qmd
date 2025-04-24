@@ -37,8 +37,6 @@ The deployed web link was emailed to students from STAT 4243/5243 and statistics
 
 -   Average session duration: The average time (in seconds) users spent per session.
 
--   Tutorial duration (customized metric): The average time users (in seconds) spend going through instruction windows.
-
 ## Statistical Analysis & Results
 
 1.  Compare click-through rate (CTR) between two groups
