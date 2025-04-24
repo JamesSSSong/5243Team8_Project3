@@ -14,3 +14,13 @@ This project implements an A/B test using a Shiny web application called *Intera
 - `Final_Report.qmd` & `Final_Report.pdf`: Final report files
 
 Please note: Branch `main` contains files for submission. Branch `history` includes all the files each group member worked with and uploaded.
+
+## Contribution
+
+- **A/B Testing Design**:  *Ruoshi Zhang*, *Dailin Song*, *Yi Lu*  
+
+- **Google Analytics Data Collection**:  *Ruoshi Zhang*, *Dailin Song*, *Yi Lu*  
+
+- **Statistical Testing for A/B Groups**:  *Yi Lu*  
+
+- **Final Report Writing**:  *Ruoshi Zhang*  
