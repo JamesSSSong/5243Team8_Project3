@@ -40,5 +40,4 @@ Please note: Branch `main` contains files for submission. Branch `history` inclu
 
 ## Results Summary
 
-- **Version A** (with tutorial) showed a higher average session time and improved CTR.
-- The statistical tests confirmed significant differences in at least one engagement metric, supporting the hypothesis that tutorials improve user interaction.
+The tutorial improved directional guidance and task efficiency but had limited effect on increasing user engagement or retention. Group A users completed tasks more directly, while Group B users engaged in more exploratory behavior.
