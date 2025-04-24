@@ -248,6 +248,7 @@ results_br_fisher$name[!is.na(results_br_fisher$p_value) & results_br_fisher$p_v
 
 ```{r}
 #sd敏感度测试。可以看出s的变化不影响p-vlaue。不管s是什么，P-value都接近0。AB存在明显差异。
+ta2 <- ta - 12.875 # Average session for group A includes the time reading instruction, so minus 12.875
 s_range <- seq(0.5, 10, by = 0.1)
 p_values <- vapply(s_range, function(s) {
   se <- sqrt(s^2 / na_session + s^2 / nb_session)

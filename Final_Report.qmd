@@ -11,7 +11,7 @@ GitHub Repository: <https://github.com/JamesSSSong/5243Team8_Project3/tree/main>
 
 ## Introduction
 
-This project implements an A/B test using a Shiny web application called Interactive Data Analysis App. Users were randomly assigned to each version via URL query parameters, and user engagement was tracked using Google Analytics. Key events, including button clicks, bounce rate, and time spend on certain section were recorded and analyzed to determine which version performed better.
+This project implements an A/B test using a Shiny web application called Interactive Data Analysis App. Users were randomly assigned to each version via URL query parameters, and user engagement was tracked using Google Analytics. Key events, including button clicks, bounce rate, and average session time were recorded and compared to determine which version performed better.
 
 **Research Question**: Does a guided tutorial interface (Group A) lead to greater user engagement compared to the simplified version (Group B)?
 
@@ -21,11 +21,11 @@ This project implements an A/B test using a Shiny web application called Interac
 
 -   **Dependent Variable**: Button click counts, bounce rate, average session duration
 
-To fulfill random assignment, we used JavaScript to assign each user a group and redirects the URL using `?group=A` or `?group=B`. Furthermore, Google Analytics (GA) is integrated into R Shiny to track each user's activities. We customized events for tracking button clicks, such as `LoadData`, `ProcessData`, `SavePCA`, `ApplyFeatureSelection`, `SaveNewFeature`, `EnableHistogram` and other EDA graphing buttons. In addition, two levels of grouping, `group` (event-scoped) and `ab_group` (user-scoped) were also sent to GA for further use.
+To fulfill random assignment, we used JavaScript to assign each user a group and redirect the URL using `?group=A` or `?group=B`. Furthermore, Google Analytics (GA) is integrated into R Shiny to track each user's activities. We customized events for tracking button clicks, such as `LoadData`, `ProcessData`, `SavePCA`, `ApplyFeatureSelection`, `SaveNewFeature`, `EnableHistogram`, and other EDA graphing buttons. In addition, two levels of grouping, `group` (event-scoped) and `ab_group` (user-scoped) were also sent to GA for further use.
 
 ## Data Collection
 
-The deployed web link was emailed out to students from STAT 4243/5243 and statistics major. Data are collected through GA. It is important to note that GA only provides records in terms of groups and there are no individual user's records. The metrics under the dimension of groups and event being considered are:
+The deployed web link was emailed to students from STAT 4243/5243 and statistics majors. Data are collected through GA. It is important to note that GA only provides records in terms of groups and there are no individual user records. The metrics under the dimension of groups and events being considered are:
 
 -   Sessions: The number of sessions.
 
@@ -60,17 +60,19 @@ n_session<- data[1,3]
 n_event<-data2[1,4]
 n_active_user = data2[1,5]
 n_user = data2[1,6]
-na_session<-data2[3,4]
-na_event<-data2[3,5]
-nb_session<-data2[4,4]
-nb_event<-data2[4,5]
+na_session<-data2[4,4]
+na_event<-data2[4,5]
+nb_session<-data2[3,4]
+nb_event<-data2[3,5]
+ta<-data2[4,6]
+tb<-data2[3,6]
 df1<-data[-1,-9]
 df1<-df1[df1$group %in% c("A", "B"), ]
 dfa<-df1[df1$group == "A",]
 dfb<-df1[df1$group == "B",]
 rownames(df1) <- NULL  
 rownames(dfa) <- NULL  
-rownames(dfb) <- NULL  
+rownames(dfb) <- NULL    
 ```
 
 ```{r}
@@ -95,11 +97,11 @@ ggplot(df_ab, aes(x = name, y = CTR, fill = group)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
 
-Given $CTR = \frac{session}{total number of session}$, the graph above displays group A and B's CTR of every event. `user_engagement` and `scroll` have high rates in both groups, indicating that users are generally engaged with the content. Users from group A who click through the data preprocessing section with a higher rate. Some buttons from EDA section, such as boxplot for categorical vs. numerical variables and bar chart for bivariate categorical variables, also shows higher rate in group A. The other events seems have similar CTR for both groups.
+Given $CTR = \frac{session}{total number of session}$, the graph above displays Group A and B's CTR of every event. `user_engagement` and `scroll` have high rates in both groups, indicating that users are generally engaged with the content. Users from Group A who click through the data preprocessing section with a higher rate. Some buttons from the EDA section, such as boxplot for categorical vs. numerical variables and bar chart for bivariate categorical variables, also show higher rates in Group A. The other events seem to have similar CTRs for both groups.
 
-A chi-squared test was applied to whether whether CTR are different for group A and B and the results show that only two buttons from EDA section, `CatNumPlotType_Boxplot` and `CatPlotType_Grouped Bar Chart`, have some significant difference while all the others did not.
+A chi-squared test was applied to whether whether CTRs were different for Group A and B. The results show that only two buttons from the EDA section, `CatNumPlotType_Boxplot` and `CatPlotType_Grouped Bar Chart`, have some significant differences while all the others did not.
 
-Since the sample size is quite small, we further tried Fisher's exact test and Bootstrap to see the different but the results were the same as the chi-squared test. We can conclude that there is no evidence supporting that the general CTR is different between two groups whereas only some events were clicked at significantly different rates.
+Since the sample size is quite small, we further tried Fisher's exact test and Bootstrap to see the difference but the results were the same as the chi-squared test. We can conclude that there is no evidence supporting that the general CTR is different between the two groups whereas only some events were clicked at significantly different rates.
 
 2.  Compare bounce rate between two groups
 
@@ -115,10 +117,80 @@ ggplot(df_ab, aes(x = name, y = bounce_rate , fill = group)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
 
-The plots reveal that group A has noticeably higher bounce rates on events like `CatNumPlotType_Boxplot` and `CatNumPlotType_Violin Plot` and group B shows higher bounce rate on events `EnableBoxplot`, `EnableDotplot`, and `EnableHistogram`. Other customized events all remain a rate of 0 meaning there is no bouncing happened.
+The plots reveal that Group A has noticeably higher bounce rates on events like `CatNumPlotType_Boxplot` and `CatNumPlotType_Violin Plot` and Group B shows higher bounce rates on events `EnableBoxplot`, `EnableDotplot`, and `EnableHistogram`. Other customized events all remain at a rate of 0 meaning there is no bouncing happened.
 
-By implementing chi-squared test and Fisher's exact test, a significant difference in bounce rates can be observed on events: `CatNumPlotType_Boxplot`, `CatPlotType_Grouped Bar Chart`, `EnableBoxplot`, `EnableDotplot`, `EnableHistogram`, and `form_start`.
+By implementing the chi-squared test and Fisher's exact test, a significant difference in bounce rates can be observed on events: `CatNumPlotType_Boxplot`, `CatPlotType_Grouped Bar Chart`, `EnableBoxplot`, `EnableDotplot`, `EnableHistogram`, and `form_start`.
 
-Since group B shows a clearly higher bar for Group B on `form_start` than Group A, which conveys that users in Group B are more likely to abandon the page shortly after their first interaction with a form. In the EDA section, both groups have users who leave the page after looking at certain graphical displays.
+Group B shows a clearly higher bar for Group B on `form_start` than Group A, which conveys that users in Group B are more likely to abandon the page shortly after their first interaction with a form. In the EDA section, both groups have users who leave the page after looking at certain graphical displays.
+
+3.  Compare total average session duration between two groups
+```{r}
+#| echo: false
+ta2 <- ta - 12.875 
+s_range <- seq(0.5, 10, by = 0.1)
+p_values <- vapply(s_range, function(s) {
+  se <- sqrt(s^2 / na_session + s^2 / nb_session)
+  t_stat <- (ta2 - tb) / se
+  df <- na_session + nb_session - 2
+  2 * pt(-abs(t_stat), df)
+}, numeric(1))
+
+plot(s_range, p_values, type = "l", lwd = 2,
+     xlab = "Assumed Standard Deviation", ylab = "p-value",
+     main = "Sensitivity Analysis of t-test")
+abline(h = 0.05, lty = 2)
+```
+```{r}
+#| echo: false
+x <- rnorm(na_session, mean = ta2, sd = 2)
+y <- rnorm(nb_session, mean = tb, sd = 2)
+t.test(x, y)
+```
+Before implementing statistical tests for means, a sensitivity analysis was first conducted by varying the assumed standard deviation between 0.5 and 10. Across the full range, the p-value remained effectively zero, indicating that the t-test result is highly robust to uncertainty in the variance estimate.
+
+A two-sample t-test is applied to assess whether the average session time differs between Group A and B with a standard deviation setting to 2. The extremely small p-value indicates a highly significant difference between the two group means. Moreover, the negative t-statistics and interval mean confirm that Group B has a significantly higher mean than Group A.
+
+4. Other observations
+```{r}
+#| echo: false
+#| warning: false
+funnel_pca_step <- c("page_view", "LoadData", "ProcessData", "ApplyPCA", "SavePCA", 
+"ApplyNewFeature", "SaveNewFeature")
+
+funnel_pca <- df_ab %>%
+  filter(name %in% funnel_pca_step) %>%
+  group_by(name, group) %>%
+  summarise(users = sum(event), .groups = "drop") %>%
+  pivot_wider(names_from = group, values_from = users, names_prefix = "users_") %>%
+  dplyr::rename(stage = name) %>%
+  mutate(stage = factor(stage, levels = funnel_pca_step)) %>%
+  arrange(stage)
+
+funnel_long <- funnel_pca %>%
+  pivot_longer(cols = starts_with("users_"),
+               names_to = "group",
+               names_prefix = "users_",
+               values_to = "users")
+
+ggplot(funnel_long, aes(x = stage, y = users, fill = group)) +
+  geom_col(position = "dodge") +
+  labs(title = "A/B Funnel Comparison", y = "Users", x = "Stage") +
+  theme_minimal()
+```
+We further built a funnel analysis to compare how users in Groups A and B progress through key stages of feature engineering related interaction. The graph shows that within users in Group A, no one really touched the `Apply PCA` button but only touched the `Save PCA` button.
 
 ## Interpretation & Conclusion
+
+While Group A displayed marginally higher CTRs in some stages, especially in EDA, the overall interaction patterns between groups were similar. Only two EDA tools showed a statistically significant difference in usage rates. This suggests that the tutorial may guide users to specific features, but it does not drastically change users' overall engagement or behavior patterns. 
+
+Bounce rate analysis further supports this finding. Overall, the presence of a tutorial does not lead to a substantial reduction in bounce rates. While Group A may exit more frequently after completing structured steps, and Group B may disengage due to exploration fatigue, these tendencies are event-specific rather than widespread behavioral differences. 
+
+While the tutorial may guide user actions, it does not appear to increase overall session time. In fact, users without the tutorial (Group B) remained active for longer, potentially due to more open-ended exploration or less structured task completion. This suggests that tutorials may lead users to accomplish tasks more efficiently, resulting in shorter but more purposeful sessions.
+
+One possible explanation is that some users in Group A may look through the tutorial superficially, and further "engage" with the app, driven by the understanding their interaction was part of the data collection process. This is further illustrated in our funnel analysis, where many users skipped clicking Apply PCA (which generates PCA results) and proceeded directly to Save PCA, which stores results. This confirms that some users may have followed instructions passively without truly interacting with the analysis steps.
+
+In summary, the tutorial successfully directed users to certain features and made their navigation more efficient, but it had little impact on overall click-through rates or bounce rates. While Group A completed tasks more efficiently, Group B users spent more time exploring. This suggests that tutorials enhance task orientation but may limit deeper, self-driven exploration.
+
+## Challenges & Limitations
+
+The main challenge of this project was the delay in data updates from Google Analytics, particularly when using custom dimensions. This slows down debugging, A/B testing validation, and general development feedback procedures. Since most participants were classmates familiar with the project’s purpose, their behavior may have been influenced by prior expectations, potentially limiting the representativeness of the results and introducing bias. Last but not least, the sample size in this study was relatively small, which limits the statistical power of the analysis. With fewer participants, it becomes harder to detect subtle differences between groups, increasing the likelihood of Type II errors.
