@@ -205,25 +205,27 @@ The main challenge of this project was the delay in data updates from Google Ana
 
     -   Modify original app code for adding instruction windows for the `Feature Engineering` section
 
-    -   Add code for tracking click counts of buttons from the `Feature Engineering` section
+    -   Add code for tracking click counts of buttons from the `Feature Engineering` section on GA
 
     -   Integrate Google Analytics to shiny
 
-    -   Export data from GA
+    -   A/B testing design
 
-    -   Implement all statistical tests
+    -   Implement statistical tests
 
 -   Dailin Song (ds4354)
 
     -   Modify original app code for adding instruction windows for the `EDA` section
-    -   Add code for tracking click counts of many buttons from the `EDA` section
+    -   Add code for tracking click counts of many buttons from the `EDA` section on GA
     -   Add code for tracking time spent on pop-up windows for use on statistical test
-    -   Follow realtime data on GA
+    -   A/B testing design
 
 -   Ruoshi Zhang (rz2699)
 
     -   Modify original app code for adding instruction windows for the `Loading Datasets` and `Data Preprocessing` sections
 
-    -   Add code for tracking click counts of two buttons from the `Loading Datasets` and `Data Preprocessing` sections
+    -   Add code for tracking click counts of two buttons from the `Loading Datasets` and `Data Preprocessing` sections on GA
 
-    -   Final report
+    -   A/B testing design
+
+    -   Final report writing
