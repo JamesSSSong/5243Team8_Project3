@@ -89,7 +89,6 @@ ggplot(df_BR_remove0, aes(x = name, y = bounce_rate , fill = group)) +
 ```
 
 ```{r}
-#漏斗图。最后savePCA异常的高，说明有人没认真检测。只是随便找了几个按钮按按
 funnel_pca_step <- c("page_view", "LoadData", "ApplyPCA", "SavePCA")
 
 funnel_pca <- df_ab %>%
@@ -248,7 +247,6 @@ results_br_fisher$name[!is.na(results_br_fisher$p_value) & results_br_fisher$p_v
 ```
 
 ```{r}
-#sd敏感度测试。可以看出s的变化不影响p-vlaue。不管s是什么，P-value都接近0。AB存在明显差异。
 ta2 <- ta - 12.875 # Average session for group A includes the time reading instruction, so minus 12.875
 s_range <- seq(0.5, 10, by = 0.1)
 p_values <- vapply(s_range, function(s) {
@@ -265,7 +263,6 @@ abline(h = 0.05, lty = 2)
 ```
 
 ```{r}
-#没有数据，但是我们知道xbar和sd，模拟一下。根据clt定律，我们的样本数量足够被认为是正态分布
 x <- rnorm(na_session, mean = ta2, sd = 2)
 y <- rnorm(nb_session, mean = tb, sd = 2)
 t.test(x, y)
