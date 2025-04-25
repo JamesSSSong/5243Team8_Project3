@@ -1,0 +1,62 @@
+# ----------------------------------------
+# shiny app
+# ab group-data
+# 20250326-20250422
+# ----------------------------------------
+
+Event name,ab_group,Sessions,Event count,Active users,Total users,Bounce rate,Average session duration
+,,124,1245,91,91,0.4032258064516129,305.4323958951612,Grand total
+first_visit,(not set),90,90,90,90,0.4111111111111111,0
+page_view,(not set),90,98,90,90,0.4111111111111111,0.02782448888888889
+session_start,(not set),90,90,90,90,0.4111111111111111,0
+scroll,B,60,137,46,46,0.3333333333333333,4.7522554
+scroll,A,52,93,42,42,0.36538461538461536,3.416963403846154
+CatNumPlotType_Boxplot,A,36,52,33,33,0.4166666666666667,0
+CatPlotType_Grouped Bar Chart,A,36,52,33,33,0.4166666666666667,188.48266391666664
+page_view,B,34,97,21,22,0.11764705882352941,252.47565891176467
+user_engagement,B,34,59,21,21,0.20588235294117646,308.8580939411764
+CatNumPlotType_Boxplot,B,33,39,32,32,0.30303030303030304,0
+CatPlotType_Grouped Bar Chart,B,33,39,32,32,0.30303030303030304,5.239889090909091
+page_view,A,31,55,21,23,0.1935483870967742,136.3058704516129
+user_engagement,A,26,45,18,18,0.11538461538461539,132.43973765384618
+session_start,B,21,21,7,8,0.38095238095238093,0.000017142857142857145
+session_start,A,13,13,5,7,0.38461538461538464,0
+form_start,B,11,13,9,9,0.09090909090909091,50.098229090909086
+LoadData,B,9,16,9,9,0,63.14560211111112
+LoadData,A,8,27,8,8,0,15.836298625000001
+RunNumNumTest,A,8,23,8,8,0,4.882285375
+RunNumNumTest,B,8,12,8,8,0,0
+SavePCA,B,8,31,4,4,0,123.937352125
+ProcessData,A,7,29,7,7,0,42.503634285714284
+form_start,A,7,12,6,6,0,41.749342000000006
+RunCatCatTest,A,6,11,6,6,0,0
+ProcessData,B,5,9,5,5,0,29.2950916
+EnableBoxplot,B,4,6,4,4,0.25,11.803694
+EnableHistogram,A,4,4,4,4,0,12.68893225
+EnableHistogram,B,4,7,4,4,0.25,14.15638075
+SavePCA,A,4,4,3,3,0,51.208966000000004
+ApplyFeatureSelection,A,3,9,3,3,0,12.549221000000001
+ApplyPCA,B,3,4,3,3,0,16.560095333333333
+EnableBarChart,B,3,6,3,3,0,11.795214666666666
+EnableDotplot,B,3,5,3,3,0.3333333333333333,1.8692036666666667
+RunCatCatTest,B,3,4,3,3,0,0
+ApplyNewFeature,A,2,5,2,2,0,7.613748
+EnableBarChart,A,2,2,2,2,0,13.005196
+EnableBoxplot,A,2,2,2,2,0,8.70659
+EnableDotplot,A,2,2,2,2,0,0
+EnableLinePlot,B,2,3,2,2,0,0
+EnablePieChart,B,2,2,2,2,0,0
+EnableScatterPlot,A,2,2,2,2,0,15.589281
+EnableScatterPlot,B,2,3,2,2,0,16.660233
+ApplyFeatureSelection,B,1,2,1,1,0,17.441466
+ApplyNewFeature,B,1,1,1,1,0,24.753899
+CatNumPlotType_Violin Plot,A,1,1,1,1,0,0
+CatPlotType_Stacked Bar Chart,A,1,1,1,1,0,7.438625
+CatPlotType_Stacked Bar Chart,B,1,1,1,1,0,5.622642
+EnableLinePlot,A,1,1,1,1,0,0
+EnablePieChart,A,1,1,1,1,0,12.951987
+SaveNewFeature,A,1,1,1,1,0,0
+SaveNewFeature,B,1,1,1,1,0,0
+first_visit,B,1,1,1,1,0,0.000061
+user_engagement,(not set),1,1,1,1,0,3.743513
+
